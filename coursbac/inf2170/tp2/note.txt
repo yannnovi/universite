@@ -1,0 +1,1005 @@
+;*****************************************************************************
+;$Id: note.txt,v 1.2 2003/07/12 13:34:45 yann Exp $
+;*****************************************************************************
+; Programme: NOTE.TXT                   version PEP7
+;
+; Auteur: Yann Bourdeau
+; Courriel: bourdeau.yann@courrier.uqam.ca
+; date: été 2003
+; cours: INF2170-30
+; 
+; Ce programme calcule la note d'un étudiant.
+; Un étudiant a 5 notes: Examen 1, Examen 2, TP1, TP2 et TP3.
+;
+; La note normale est calculée comme suit:
+; TP1(15%), TP2(15%), TP3(20%), Examen 1(25%) et Examen 2(25%).
+;
+; La note peut subir une majoration comme suit:
+; Les examens comptent pour 20% chacun et le 10% manquant est ajouté
+; au meilleur travail.
+;
+; La note finale est la valeur la plus élevée entre la note normale et la note
+; majorée.
+;
+;*****************************************************************************
+; Affiche le message de bienvenue
+MAXCAR: .EQUATE d#39            ; Commence à zéro.
+TRUE:   .EQUATE d#1
+FALSE:  .EQUATE d#0
+        LOADA   welcome,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.
+        LOADA   separat,i       ; Charge le séparateur.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.        
+boucle: LOADA   question,i      ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.        
+        
+; Lis la chaîne
+        LOADA   MAXCAR,i        ; Initialise le registre A au maximum de caractère de la chaîne
+        STOREA  d#-6,s          ; Sauvegarde la paramètre sur la pile
+        ADDSP   D#-6,i          ; Ajuste la pile.
+        JSR     lischai         ; Appele la routine pour lire une chaîne
+        LOADX   d#2,s           ; Charge la nombre de caractère lus.
+        LOADA   d#4,s           ; Charge l'adresse de la chaîne.
+        STOREA  addrchai,d      ; Sauvegarde l'adresse.
+        ADDSP   D#6,i           ; Ajuste la pile.
+        COMPX   d#0,i           ; Compare la nombre de caractère lus à 0.
+        BREQ    fin             ; Si 0, termine le programme.
+        COMPX   MAXCAR,i        ; Compare la chaîne au nombre de caracter maximum
+        BRLE    suite1          ; Si plus petit égal que le maximum, continue
+        
+; Affiche message erreur quand trop de caractères.
+        LOADA   errnote,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.                        
+        BR      suite6          ; Recommence la saisie des notes.        
+        
+; Valide la chaîne        
+suite1: STOREA  d#-14,s         ; Sauvegarde sur la pile, l'adresse de la chaine.
+        ADDSP   d#-14,i         ; Ajuste la pile.
+        JSR     anchai          ; Appele la routine qui analyse la chaine.
+        LOADX   d#2,s           ; Charge le booléen qui détermine si la chaine est valide.
+        LOADA   d#4,s           ; Charge la note 1.
+        STOREA  note1,d         ; Sauvegarde la note 1.
+        LOADA   d#6,s           ; Charge la note 2.
+        STOREA  note2,d         ; Sauvegarde la note 2.
+        LOADA   d#8,s           ; Charge la note 3.
+        STOREA  note3,d         ; Sauvegarde la note 3.
+        LOADA   d#10,s          ; Charge la note 4.
+        STOREA  note4,d         ; Sauvegarde la note 4.
+        LOADA   d#12,s          ; Charge la note 5.
+        STOREA  note5,d         ; Sauvegarde la note 5.
+        ADDSP   d#14,i          ; ajuste la pile.      
+        COMPX   FALSE,i         ; Vérifie si les 5 notes sont valides.
+        BRNE    suite2          ; Continue le traitement si valide.
+        
+; Affiche message erreur quand note invalide.
+        LOADA   errnote,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.                        
+        BR      suite6          ; Recommence la saisie des notes.        
+
+; Calcule la note de l'étudiant.
+suite2: JSR     affnotes        ; Affiche les 5 notes à l'écran.
+        JSR     calnotes        ; Calcul les notes.
+        
+;Affiche le resultat.
+        LOADA   notenorm,i      ; Charge le méssage.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.        
+        LOADA   rnotenor,d      ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.        
+        LOADA   notemaj,i       ; Charge le méssage.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.     
+        LOADA   rnotemaj,d      ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.                   
+        LOADA   notefin,i       ; Charge le méssage.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.     
+        LOADA   rnotenor,d      ; Charge la note normal.
+        COMPA   rnotemaj,d      ; Compare à la note majorée.
+        BRGT    suite3          ; Affiche la note majorée.
+        LOADA   rnotemaj,d      ; Charge la note majorée.
+suite3: STOREA  rnotefin,d      ; Sauvegarde la note finale.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.                           
+        LOADA   notelit,i       ; Charge le méssage.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.     
+        LOADA   rnotefin,d      ; Charge la note finale.
+note85: COMPA   d#850,i         ; Compare a 85%
+        BRlT    note75          ; Continue le traitement.
+        CHARO   c#/A/,i         ; Affiche la note A
+        BR      suite4          ; continue le traitement.
+note75: COMPA   d#750,i         ; Compare à 75%
+        BRlT    note65          ; Continue le traitement.
+        CHARO   c#/B/,i         ; Affiche la note B
+        BR      suite4          ; continue le traitement.        
+note65: COMPA   d#650,i         ; Compare à 65%.
+        BRlT    note55          ; Continue le traitement.
+        CHARO   c#/C/,i         ; Affiche la note C
+        BR      suite4          ; continue le traitement.                        
+note55: COMPA   d#550,i         ; Compare à 55%.
+        BRlT    note0           ; Continue le traitement.
+        CHARO   c#/D/,i         ; Affiche la note D
+        BR      suite4          ; continue le traitement.                                
+note0:  CHARO   c#/E/,i         ; Affiche la note E      
+suite4: CHARO   h#0a,i          ; Saut de ligne.
+
+suite6: LOADA   separat,i       ; Charge le séparateur.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.        
+        BR      boucle          ; Boucle le programme.
+        
+fin:    LOADA   finprg,i        ; Charge le message de la fin du programme.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.
+        STOP                    ; Termine le programme
+        
+;*****************************************************************************        
+; Routine qui affiche les notes à l'écran
+affnotes:LOADA   tp1,i           ; Charge le message.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.                
+        LOADA   note1,d         ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.
+        LOADA   tp2,i           ; Charge le message.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.                
+        LOADA   note2,d         ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.
+        LOADA   tp2,i           ; Charge le message.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.                
+        LOADA   note3,d         ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.
+        LOADA   ex1,i           ; Charge le message.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.                
+        LOADA   note4,d         ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.
+        LOADA   ex2,i           ; Charge le message.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affmsg          ; Affiche le message.                
+        LOADA   note5,d         ; Charge la note dans reg A.
+        STOREA  d#-2,s          ; Sauvegarde le pointeur comme paramètre.
+        ADDSP   d#-2,i          ; Ajuste la pile.
+        JSR     affnote         ; Affiche la note.
+        CHARO   h#0a,i
+        CHARO   h#0a,i
+        RTS
+        
+;*****************************************************************************        
+; Routine qui calcul les notes de l'étudiant.
+calnotes:LOADX   note1,d         ; Charge la note du TP1.
+        STOREX  d#-8,s         ; Sauvegarde le premier paramètre.                              
+        LOADX   d#15,i          ; 15%
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.        
+        STOREX  noterest,d      ; Sauvegarde le reste.
+        STOREA  rnotenor,d      ; Sauvegarde la note normale.
+        LOADX   note2,d         ; Charge la note du TP2.
+        STOREX  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        LOADX   d#15,i          ; 15%
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.
+        ADDA    rnotenor,d      ; Ajuste la note déja calculé.
+        STOREA  rnotenor,d      ; Sauvegarde la note normale.
+        LOADX   note3,d         ; Charge la note du TP3.
+        STOREX  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        LOADX   d#20,i          ; 20%
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.
+        ADDA    rnotenor,d      ; Ajuste la note déja calculé.
+        STOREA  rnotenor,d      ; Sauvegarde la note normale.        
+        LOADX   note4,d         ; Charge la note de l'examen 1.
+        STOREX  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        LOADX   d#25,i          ; 25%
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.        
+        ADDA    rnotenor,d      ; Ajuste la note déja calculé.
+        STOREA  rnotenor,d      ; Sauvegarde la note normale.                
+        LOADX   note5,d         ; Charge la note de l'examen 2.
+        STOREX  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        LOADX   d#25,i          ; 25%
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile. 
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.               
+        ADDA    rnotenor,d      ; Ajuste la note déja calculé.
+        STOREA  rnotenor,d      ; Sauvegarde la note normale. 
+        LOADX   d#100,i         ; Mets le diviseur à 100.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   noterest,d      ; Charge la dividende.
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Divise le reste par 100.
+        LOADA   d#4,s           ; Lis le résultat. (quotient)
+        LOADX   d#6,s           ; Lis le résultat. (reste)        
+        ADDSP   d#8,i           ; Ajuste la pile.
+        ADDA    rnotenor,d      ; Additionne la note déja existante.
+        STOREA  rnotenor,d      ; Sauvegarde la note.
+        COMPX   d#50,i          ; Compare le reste.
+        BRLT    major           ; Si inférieur à 5 pas besoin d'arrondir.
+        LOADA   d#1,i           ; Mets 1 dans reg A.
+        ADDA    rnotenor,d      ; Additionne 1 à la note.
+        STOREA  rnotenor,d      ; Sauvegarde la note.
+; Calcul la note majorée.
+major:  LOADX   d#15,i          ; 15%
+        LOADA   note1,d         ; Charge la note du TP1.
+        COMPA   note2,d         ; Compare à la note du TP2
+        BRLE    nsuite1         ; Augmente pas de 10%.
+        COMPA   note3,d         ; Compare à la node du TP3.
+        BRLE    nsuite1         ; Augmente pas de 10%.
+        ADDX    d#10,i          ; Ajoute 10% au poids du TP.
+nsuite1:STOREA  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.         
+        STOREX  noterest,d      ; Sauvegarde le reste.
+        STOREA  rnotemaj,d      ; Sauvegarde la note calculé.
+        LOADX   d#15,i          ; 15%
+        LOADA   note2,d         ; Charge la node du TP2.
+        COMPA   note3,d         ; Compare à la node du TP3.
+        BRLE    nsuite2         ; augmente pas de 10%.
+        COMPA   note1,d         ; Compare à la note du TP1.
+        BRLT    nsuite2         ; augmente pas de 10%.
+        ADDX    d#10,i          ; Ajoute 10% au poids du TP.
+nsuite2:STOREA  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.                       
+        ADDA    rnotemaj,d      ; Ajoute la note déja calculé.
+        STOREA  rnotemaj,d      ; Sauvegarde la note calculé.
+        LOADX   d#20,i          ; 20%
+        LOADA   note3,d         ; Charge la note du TP3.
+        COMPA   note1,d         ; Compare à la note du TP1
+        BRLT    nsuite3         ; augmente pas de 10%.
+        COMPA   note2,d         ; Compare à la note du TP2.
+        BRLT    nsuite3         ; augmente pas de 10%.
+        ADDX    d#10,i          ; Ajoute 10% au poids du TP.
+nsuite3:STOREA  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.                       
+        ADDA    rnotemaj,d      ; Ajoute la note déja calculé.
+        STOREA  rnotemaj,d      ; Sauvegarde la note calculé.                                       
+        LOADX   d#20,i          ; 20%
+        LOADA   note4,d         ; Charge la note de l'examen 1.
+        STOREA  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.                       
+        ADDA    rnotemaj,d      ; Ajoute la note déja calculé.
+        STOREA  rnotemaj,d      ; Sauvegarde la note calculé.                                               
+        LOADX   d#20,i          ; 20%
+        LOADA   note5,d         ; Charge la note de l'examen 2.
+        STOREA  d#-8,s          ; Sauvegarde le premier paramètre.                              
+        STOREX  d#-6,s          ; Sauvegarde le deuxieme paramètre.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     pournote        ; Calcul le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        LOADX   d#6,s           ; Lis le reste.
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDX    noterest,d      ; Additionne le reste déja existant.
+        STOREX  noterest,d      ; Sauvegarde le reste.                       
+        ADDA    rnotemaj,d      ; Ajoute la note déja calculé.
+        STOREA  rnotemaj,d      ; Sauvegarde la note calculé.                                               
+        LOADX   d#100,i         ; Mets le diviseur à 100.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   noterest,d      ; Charge la dividende.
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Divise le reste par 100.
+        LOADA   d#4,s           ; Lis le résultat. (quotient)
+        LOADX   d#6,s           ; Lis le résultat. (reste)        
+        ADDSP   d#8,i           ; Ajuste la pile.
+        ADDA    rnotemaj,d      ; Additionne la note déja existante.
+        STOREA  rnotemaj,d      ; Sauvegarde la note.
+        COMPX   d#50,i          ; Compare le reste.
+        BRLT    ofin            ; Si inférieur à 5 pas besoin d'arrondir.
+        LOADA   d#1,i           ; Mets 1 dans reg A.
+        ADDA    rnotemaj,d      ; Additionne 1 à la note.
+        STOREA  rnotemaj,d      ; Sauvegarde la note.        
+ofin:  RTS
+        
+;*****************************************************************************
+;---- Constantes.
+welcome:        .ASCII  /Programme qui calcul la note d'un étudiant/
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /Auteur: Yann Bourdeau/
+                .BYTE   h#0a    ; ligne suivante.
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /La note finale est composée de 5 notes: Examen 1, Examen 2, TP1, TP2 et TP3./
+                .BYTE   h#0a    ; ligne suivante.
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /La note normale est calculée comme suit:/
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /TP1(15%), TP2(15%), TP3(20%), Examen 1(25%) et Examen 2(25%)./
+                .BYTE   h#0a    ; ligne suivante.
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /La note peut subir une majoration comme suit:/
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /Les examens comptent pour 20% chacun et le 10% manquant est ajouté/
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /au meilleur travail./
+                .BYTE   h#0a    ; ligne suivante.
+                .BYTE   h#0a    ; ligne suivante.
+                .ASCII  /Une note doit être entre 0 et 100. Le note peut contenir une décimale./
+                .WORD   h#0A00  ; ligne suivante, Fin de chaîne.
+question:       .ASCII  /Entrez les notes du TP1, TP2, TP3, Examen 1 et Examen 2 (Ligne vide pour terminer):/                         
+                .BYTE   d#0     ; Fin de chaîne.        
+separat:        .ASCII  /-------------------------------------------------------------------------------/
+                .WORD   H#0a00  ;ligne suivante, Fin de chaîne.                        
+finprg:         .BYTE   h#0a     ; Ligne suivante
+                .ASCII  /-------------------------------------------------------------------------------/
+                .BYTE   h#0a     ; Ligne suivante
+                .ASCII  /Fin du programme./                        
+                .BYTE   d#0     ; Fin de ligne.       
+errnote:        .ASCII /Entrée invalide./                                        
+                .WORD   H#0a00  ;ligne suivante, Fin de chaîne.                                        
+tp1:            .BYTE   h#0a     ; Ligne suivante
+                .ASCII /TP 1: /                                        
+                .BYTE   d#0     ; Fin de ligne.       
+tp2:            .ASCII /  TP 2: /                                        
+                .BYTE   d#0     ; Fin de ligne.       
+tp3:            .ASCII /  TP 3: /
+                .BYTE   d#0     ; Fin de ligne.       
+ex1:            .ASCII /  EXAMEN 1: /
+                .BYTE   d#0     ; Fin de ligne.       
+ex2:            .ASCII /  EXAMEN 2: /
+                .BYTE   d#0     ; Fin de ligne.                       
+notenorm:       .ASCII /Note normale: /
+                .BYTE   d#0     ; Fin de ligne.                       
+notemaj:        .ASCII /%  Note majorée: /
+                .BYTE   d#0     ; Fin de ligne.                       
+notefin:        .ASCII /%  Note finale: /
+                .BYTE   d#0     ; Fin de ligne.                       
+notelit:        .ASCII /%  Note littérale: /
+                .BYTE   d#0     ; Fin de ligne.                       
+;----- Variables
+note1:          .WORD   d#0     ; Contient la note du TP1.                     
+note2:          .WORD   d#0     ; Contient la note du TP2.                                
+note3:          .WORD   d#0     ; Contient la note du TP3.                                
+note4:          .WORD   d#0     ; Contient la note de l'examen 1.           
+note5:          .WORD   d#0     ; Contient la note de l'examen 2.                      
+addrchai:       .WORD   d#0     ; Contient l'adresse de la chaine lus.
+rnotenor:       .WORD   d#0     ; Contient la note final de l'étudiant.
+rnotemaj:       .WORD   d#0     ; Contient la note majorée.
+rnotefin:       .WORD   d#0     ; Contient la note finale.
+noterest:       .WORD   d#0     ; Contient le reste du calcul de la note.
+;*****************************************************************************                        
+; Routine Afficher
+; Affiche une chaîne de caractères jusqu'au caractère fin de chaîne.
+; PARAMETRE: (PILE) Pointeur du message.
+;
+vregX:  .EQUATE d#0             ; sauvegarde X
+vregA:  .EQUATE d#2             ; sauvegarde A
+adRet:  .EQUATE d#4             ; adresse de retour
+adMsg:  .EQUATE d#6             ; addresse du message à afficher
+;
+affmsg: ADDSP   d#-4,i          ; espace local sauvegarde
+        STOREA  vregA,s         ; sauvegarde A
+        STOREX  vregX,s         ; sauvegarde X
+        LOADB   adMsg,s         ; Charge le pointeur du message dans le registre B.
+        LOADX   d#0,i           ; Premier caractÞre du message.
+        LOADA   d#0,i           ; Mets le registre A à 0.
+EncorA: LDBYTA  ,x              ; Charge le caratÞre.
+        BREQ    FiniA           ; Si le caractere est la fin de chaîne, termine.
+        CHARO   ,x              ; Affiche le caractÞre.
+        ADDX    d#1,i           ; Passe au caractÞre suivant.
+        BR      EncorA          ; Boucle au chargement de caractÞre.
+FiniA:  LOADA   adRet,s         ; adresse retour
+        STOREA  adMsg,s         ; déplacée sur paramètre
+        LOADA   vregA,s         ; Remet registre A à la valeur d'avant l'appel
+        LOADX   vregX,s         ; Remet registre B à la valeur d'avant l'appel.
+        ADDSP   d#6,i           ; nettoye le pile
+        RTS                     ;
+ 
+;*****************************************************************************                        
+; Routine AfficheNote
+; Affiche une note avec une décimal. La note doit être multiplié par 10
+; PARAMETRE: (PILE) Pointeur du message.
+;
+nquot:  .EQUATE d#0
+nreste: .EQUATE d#2
+nregX:  .EQUATE d#4             ; sauvegarde X
+nregA:  .EQUATE d#6             ; sauvegarde A
+naddret:.EQUATE d#8             ; adresse de retour
+nnote:  .EQUATE d#10            ; Note à afficher.
+;
+affnote:ADDSP   d#-8,i          ; espace local sauvegarde
+        STOREA  nregA,s         ; sauvegarde A
+        STOREX  nregX,s         ; sauvegarde X
+        LOADX   d#10,i          ; Mets le diviseur à 10.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   nnote,s         ; Charge la note.
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Divise la note par 10.
+        LOADA   d#4,s           ; Lis le résultat. (quotient)
+        LOADX   d#6,s           ; Lis le résultat. (reste)
+        ADDSP   d#8,i           ; Ajuste la pile.
+        STOREA  nquot,s         ; Sauvegarde le quotient.
+        STOREX  nreste,s        ; Sauvegarde le reste.
+        DECO    nquot,s         ; Affiche le quotien (partie entière de la note).
+        CHARO   c#/./,i         ; Mets le point.
+        deco    nreste,s        ; Affiche la décimal.                                                                        
+nfin:   LOADA   naddret,s       ; adresse retour
+        STOREA  nnote,s         ; déplacée sur paramètre
+        LOADA   nregA,s         ; Remet registre A à la valeur d'avant l'appel
+        LOADX   nregX,s         ; Remet registre B à la valeur d'avant l'appel.
+        ADDSP   d#10,i          ; nettoye le pile
+        RTS                     ;
+
+;*****************************************************************************                        
+; Routine LireChaine
+; Lis une chaîne de X caractere(s) au clavier. La routine retourne le nombre
+; de caractère lus et l'adresse de la chaîne. La chaîne ne peut pas etre 
+; plus longue que 254 caractères.
+; Cette routine n'est pas ré-entrante. Le contenus de la chaîne vas etre
+; perdus lors d'un second appele a cette fonction.
+; PARAMETRE: (PILE) Taille maximum de la chaîne.
+; RETOUR: (PILE) Nombre de caractère lus. Si plus grand que taille maximum, indique une erreur.
+; RETOUR: (PILE) Adresse de la chaîne lus.
+
+lsregx: .EQUATE  d#0            ; sauvegarde X
+lsrega: .EQUATE  d#2            ; sauvegarde A
+laddret:.EQUATE  d#4            ; adresse de retour
+lmaxchai:.EQUATE d#6            ; Paramètre: Nombre de caractère maximum de la chaîne.
+lnumcar:.EQUATE  d#8            ; Retour: Nombre de caractère lus.
+lptrchai:.EQUATE  d#10          ; Retour: Adresse de la chaîne lus.
+
+MAXBUF: .EQUATE d#254
+
+lischai:ADDSP   d#-4,i          ; Sauvegarde pour espace local.
+        STOREX  lsregx,s        ; Sauvegarde du reg X.
+        STOREA  lsrega,s        ; Sauvegarde du reg A.        
+        LOADA   chaine,i        ; Lis l'adresse de la chaîne.
+        STOREA  lptrchai,s      ; Sauvegarde l'adresse de la chaîne.
+        LOADA   d#0,i           ;
+        STOREA  lnumcar,s       ; Initialise le nombre de caractère à zéro.
+        LOADX   d#0,i           ; Initialise l'index à 0.
+        LOADB   chaine,i        ; Mets l'adresse de la chaîne à zero.
+lbouc1: STOREA  ,x              ; Initialise la chaîne à 0.
+        ADDX    d#2,i           ; passe au mot suivant.
+        COMPX   MAXBUF,i        ; Compare à la taille maximum.
+        BRGE    lsuit1          ; Termine la boucle si plus grand egal à 1024.
+        BR      lbouc1          ; Boucle.
+lsuit1: LOADX   d#0,i           ; Initialise l'index à 0.
+lbouc2: CHARI   ,x              ; Lis un caractère au clavier.
+        LDBYTA  ,x              ; Charge le caractère lus dans le reg A.
+        COMPA   d#10,i          ; Compare au line feed.                   
+        BRNE    lsuit2          ; Continue le traitement si pas line feed
+        LOADA   d#0,i           ; Initialise le reg A à fin de chaîne.
+        STBYTA  ,x              ; Remplace le caractère line feed par fin de chaîne.
+        BR      lfin            ; Vas à la fin.
+lsuit2: ADDX    d#1,i           ; Passe à la position du caractère suivant.
+        COMPX   lmaxchai,i      ; Compare l'index au maximum de la chaîne.
+        BRLT    lbouc2          ; Continue le traitement si la chaîne n'as pas dépassé son maximum.
+        COMPX   MAXBUF,i        ; Compare l'index au maximum d'espace pour la chaîne.
+        BRLT    lbouc2          ; Continue le traitement si la chaîne n'as pas dépassé son maximum.
+        
+;Vide le buffer de lecture jusqu'au line feed.        
+        LOADX   d#0,i           ; Mets l'index à 0.
+        LOADA   d#0,i           ; Initialise le reg a à 0.
+lbouc3: CHARI   ,x              ; Mets le caratère dans la première position.
+        LDBYTA  ,x              ; Charge le caractère.
+        COMPA   d#10,i          ; Compare au line feed.
+        BRNE    lbouc3          ; Boucle si pas line feed.                   
+        
+        LOADX   lmaxchai,i      ; Initialise la chaîne à la taille maximum.
+        ADDX    d#1,i           ; Ajoute 1 à la taille de la chaîne pour déclarer l'erreur.
+        
+
+lfin:   STOREX  lnumcar,s       ; Sauvegarde le nombre de caractère lus.
+        LOADA   lsrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   lsregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#4,i           ; nettoye la pile
+        RTS              
+;---- Variable de la routine lirenum
+chaine:  .BLOCK  d#255
+        
+        
+;*****************************************************************************                        
+; Routine AnalyseChaine
+; Cette routine analyse une chaîne pour trouver 5 notes. La note peut contenir
+; une décimal. Les notes retournés sont multiplé par 10 pour enlever la décimal.
+; La routine determine si il y a des caractères invalides.
+;
+; Paramètre: (PILE) Pointeur de la chaîne.
+; RETOUR: (PILE) Booléen (WORD) qui indique si la chaîne est valide.
+;         (PILE) Mots qui contient la note1
+;         (PILE) Mots qui contient la note2
+;         (PILE) Mots qui contient la note3
+;         (PILE) Mots qui contient la note4
+;         (PILE) Mots qui contient la note4
+;
+adebind:.EQUATE  D#0            ; Contient l'index du debut de l'élément.
+afinind:.EQUATE  D#2            ; Contient l'index de fin de l'élément.
+anumnot:.EQUATE  D#4            ; Nombre de note trouver.
+asregx: .EQUATE  d#6            ; sauvegarde X
+asrega: .EQUATE  d#8            ; sauvegarde A
+aaddret:.EQUATE  d#10           ; adresse de retour
+achaine:.EQUATE  d#12           ; Paramètre: Chaine à analyser.
+aval:   .EQUATE  d#14           ; retour: Booléen qui détermine si la fonction est valide.
+anote1: .EQUATE  d#16           ; Retour: Note 1
+anote2: .EQUATE  d#18           ; Retour: Note 2
+anote3: .EQUATE  d#20           ; Retour: Note 3
+anote4: .EQUATE  d#22           ; Retour: Note 4
+anote5: .EQUATE  d#24           ; Retour: Note 5
+
+anchai: ADDSP   d#-10,i         ; Sauvegarde pour espace local.
+        STOREX  lsregx,s        ; Sauvegarde du reg X.
+        STOREA  lsrega,s        ; Sauvegarde du reg A.        
+        LOADX   FALSE,i         ; Initialise reg X à FALSE.
+        STOREX  aval,s          ; Initialise la variable aval.
+        LOADX   d#0,i           ; Initialise la position de la chaine.
+        STOREX  anumnot,s       ; Initialise anumnot à 0.
+        LOADA   d#0,i           ; Initialise le reg A à 0.
+        LOADB   achaine,s       ; Charge l'adresse de la chaine dans le reg de base.
+; Trouve le début de la note
+abouc1: LDBYTA  ,x              ; Charge le caractère courant de la chaine.
+        BREQ    afin            ; Si fin de chaine, donnée invalide, termine
+        COMPA   c#/ /,i         ; Vérifie si espace
+        BRNE    asuite1         ; Si cela n'est pas un espace, continue le traitement.
+        ADDX    d#1,i           ; Passe au caractère suivant.
+        BR      abouc1          ; Continue la boucle.        
+asuite1:STOREX  adebind,s       ; Sauvegarde l'index du début de la note.        
+        
+; Trouve la fin de la note
+abouc2: LDBYTA  ,x              ; Charge le caractère courant de la chaine
+        BREQ    asuite2         ; Fin de la note.
+        COMPA   c#/ /,i         ; Vérifie si espace
+        BREQ    asuite2         ; Fin de la note.
+        ADDX    d#1,i           ; Passe au caractère suivant.
+        BR      abouc2          ; Continue la boucle
+asuite2:STOREX  afinind,s       ; Sauvegarde l'index de la fin de note.
+         
+; Analyse la note trouvé      
+        LOADA   achaine,s       ; Charge l'adresse de la chaine dans le REG A.
+        ADDA    adebind,s       ; Additionne l'index de début.
+        STOREA  d#-6,s          ; Sauvegarde sur la pile, l'adresse de la chaine.
+        LOADA   afinind,s       ; Charge l'index de la fin de la note.
+        SUBA    adebind,s       ; Soustrait l'index du debut
+        STOREA  d#-8,s          ; Sauvegarde sur la pile, la longueur.
+        ADDSP   d#-8,i          ; Ajuste la pile.
+        JSR     convnot         ; Appele la routine qui convertis la note!
+        LOADX   d#4,s           ; Charge le booléen qui détermine si la note est valide.
+        LOADA   d#6,s           ; Charge la note
+        ADDSP   d#8,i           ; ajuste la pile.      
+        COMPX   TRUE,i          ; Vérifie si la note est valide.
+        BRNE    afin            ; Termine si non valide
+        LOADX   anumnot,s       ; Charge le nombre de note trouvé.
+        ADDX    d#1,i           ; Augmente de 1.
+asnote1:STOREX  anumnot,s       ; Sauvegarde le nombre de note trouvé.
+        COMPX   d#1,i           ; Compare si c'est la première note.
+        BRNE    asnote2         ; Non, continue.
+        STOREA  anote1,s        ; Sauvegarde la première note.
+        BR      aok             ; Passe a la note suivante.
+asnote2:COMPX   d#2,i           ; Compare si c'est la deuxième note.
+        BRNE    asnote3         ; non continue
+        STOREA  anote2,s        ; Sauvegarde la deuxième note.
+        BR      aok             ; Passe à la note suivante.
+asnote3:COMPX   d#3,i           ; Compare si c'est la troisième note.
+        BRNE    asnote4         ; non, continue!
+        STOREA  anote3,s        ; Sauvegarde la troisième note.
+        BR      aok             ; Passe à la note suivante.
+asnote4:COMPX   d#4,i           ; Compare si c'est la quatrième note.
+        BRNE    asnote5         ; non, continue!
+        STOREA  anote4,s        ; Sauvegarde la quatrième note.
+        BR      aok             ; Passe à la note suivante.
+asnote5:COMPX   d#5,i           ; Compare si c'est la cinquième note.
+        BRNE    asnoteX         ; non, continue!
+        STOREA  anote5,s        ; Sauvegarde la cinquième note.
+        LOADA   TRUE,i          ; Initialise le reg A à TRUE.
+        STOREA  aval,s          ; 5 notes valides ont été lus, donc mets le booléen à vrai.
+        BR      aok             ; Passe à la note suivante (Il devrait pas en avoir!)
+asnoteX:LOADA   FALSE,i         ; Initialise le reg A à FALSE.
+        STOREA  aval,s          ; Plus que 5 notes, donc l'entrée est invalide.
+        BR      afin            ; Termine                       
+aok:    LOADX   afinind,s       ; Charge l'index du dernière caractère de la dernière note.
+        ADDX    d#1,i           ; Additionne 1 pour passer au suivant.
+        LOADA   d#0,i           ; Initialise le reg A à 0 pour être utiliser avec ldbyta
+        LOADB   achaine,s       ; Recharge l'adresse de la chaine dans le registre de base. Enlever a l'appel de la sous-fonction.
+        BR      abouc1          ; Recommence le traitement pour la note suivante.
+afin:   ADDSP   d#10,i          ; nettoye la pile
+        RTS              
+
+;*****************************************************************************                        
+; Routine ConvertisNote
+; Cette routine convertis une note avec un décimal en un entier.
+; La note doit être en 0 et 100
+; La note retourné est multiplé par 10 pour enlever la décimal.
+; La routine determine si il y a des caractères invalides.
+;
+; Paramètre: (PILE) Pointeur sur la chaine qui contient la note.
+;            (PILE) Longueur de la chaine à analyser
+; RETOUR: (PILE) Booléen (WORD) qui indique si la note est valide.
+;         (PILE) mots qui contient la note
+;       
+cmult:  .EQUATE d#0             ; Multiplicateur du nombre courant.
+csregx: .EQUATE d#2             ; sauvegarde X
+csrega: .EQUATE d#4             ; sauvegarde A
+caddret:.EQUATE d#6             ; adresse de retour
+clong:  .EQUATE D#8             ; Paramètre: Longueur de la chaine. 
+cchaine:.EQUATE d#10            ; Paramètre: Chaine à analyser.
+cval:   .EQUATE d#12            ; retour: Booléen qui détermine si la fonction est valide.
+cnote:  .EQUATE d#14            ; Retour: Note
+
+convnot:ADDSP   d#-6,i          ; Sauvegarde pour espace local.
+        STOREX  lsregx,s        ; Sauvegarde du reg X.
+        STOREA  lsrega,s        ; Sauvegarde du reg A.                
+        LOADX   d#1,i           ; Initialise le Reg X à 1.
+        STOREX  cmult,s         ; Mets le multiplicateur courant à 1.
+        LOADX   FALSE,i         ; Initialise le Reg X à FALSE.
+        STOREX  cval,s          ; Initialise cval à fALSE.
+        LOADX   d#0,i           ;
+        STOREX  cnote,s         ; Initialise cnote à 0.
+        LOADB   cchaine,s       ; Initialise le registre de base à la chaine.
+        LOADA   d#0,i           ; Initialise le reg A à 0.
+       
+; Vérifie si le chiffre se termine par un point.
+        LOADX   clong,s         ; Vas à la dernière position de la chaine.
+        SUBX    d#1,i           ; (longueur - 1)
+        LDBYTA  ,x              ; Charge le dernier caractère de la chaine
+        COMPA   c#/./,i         ; Vérifie si c'est un point.
+        BRNE    csuite0         ; Continue le traitement.
+        LOADX   clong,s         ; Vas à l'avant dernière position de la chaine.
+        SUBX    d#2,i           ; (longueur - 1 -1 )        
+        BR      csuite2
+; Détermine si la note à un décimal
+csuite0:LOADA   d#0,i           ; Initialise le reg A à 0.
+        LOADX   d#0,i           ; Initialise l'index a 0.        
+        LDBYTA  ,x              ; Charge le premier caractère de la chaine
+        LOADX   clong,s         ; Vas à la dernière position de la chaine.
+        SUBX    d#1,i           ; (longueur - 1)
+        COMPA   c#/./,i         ; Vérifie si c'est un point.
+        BREQ    cdec            ; Si c'est le cas traite la décimale.
+        COMPX   d#2,i           ; Vérifie que la chaine contient au moins 2 caractères (ex: .1). (longueur -1 +1 ) 
+        BRLT    csuite2         ; Il y a pas 3 caractère, donc pas de décimal.
+cdec:   SUBX    d#1,i           ; Vas à l'avant derniere position. (longueur -1  - 1 )
+        LDBYTA  ,x              ; Charge le caractère de l'avant dernière positon dans Reg A.
+        COMPA   c#/./,i         ; Vérifie si point.
+        BRNE    csuite1         ; Aucune décimal, continue.
+        LOADX   clong,s         ; Vas à la dernière position de la chaine.
+        SUBX    d#1,i           ; (longueur -1 )
+        LDBYTA  ,x              ; Charge le caractère de la dernière positon dans Reg A.
+        COMPA   c#/0/,i         ; Vérifie si le caractère est plus grand égal à 0.
+        BRLT    cfin            ; Si c'est pas le cas, termine.
+        COMPA   c#/9/,i         ; Vérifie si le caractère est plus petit égal à 9.
+        BRGT    cfin            ; Si ce n'est pas la cas, termine.
+        SUBA    h#30,i          ; Soustrait le caractère 0 du chiffre.
+        STOREA  cnote,s         ; Sauvegarde la note.
+        SUBX    d#2,i           ; Passe au caractère avant le point.      
+        COMPX   d#0,i
+        BRLT    csuite3
+        BR      csuite2         ; continue le traitement.
+csuite1:LOADX   clong,s         ; Vas à la dernière position de la chaine.        
+        SUBX    d#1,i           ; (longueur - 1)
+        
+; Multiplie le multiplicateur par 10 (donc 10 * 1)
+csuite2:LOADA   d#10,i          ; Initialise le reg X à 10.
+        STOREA  cmult,s         ; Sauvegarde le multiplicateur.
+cbouc1: LOADA   d#0,i           ; Initialise le REG a à 0.
+        LDBYTA  ,x              ; Charge le caractère courant dans le registre A.
+        COMPA   c#/0/,i         ; Vérifie si le caractère est plus grand égal à 0.
+        BRLT    cfin            ; Si c'est pas le cas, termine.
+        COMPA   c#/9/,i         ; Vérifie si le caractère est plus petit égal à 9.
+        BRGT    cfin            ; Si ce n'est pas la cas, termine.
+        SUBA    h#30,i          ; Soustrait le caractère 0 du chiffre.
+        STOREA  d#-4,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   cmult,s         ; Charge le multiplicateur courant.
+        BRLT    csuite3         ; Si le multiplicateur est negatif, termine!
+        STOREA  d#-6,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; Effectue la multiplication. 
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.        
+        ADDA    cnote,s         ; Additionne la note déja caculé.
+        STOREA  cnote,s         ; Sauvegarde la nouvelle note.
+        LOADA   d#10,i          ; Charge le multiplicateur.
+        STOREA  d#-4,s          ; Sauvegarde sur la pile le premier paramètre.                 
+        LOADA   cmult,s         ; Charge le multipliant.
+        STOREA  d#-6,s          ; Sauvegarde sur la pile le deuxième paramètre.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; Effectue la multiplication. 
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.                
+        STOREA  cmult,s         ; Sauvegarde le résultat.
+        COMPX   d#0,i           ; Verifie si au début de la chaine.
+        BREQ    csuite3         ; Si oui continue le traitement.
+        SUBX    d#1,i           ; Passe au caractère précédent.
+        BR      cbouc1          ;
+
+; Vérifie si la note est entre 0 et 1000 inclusivement.        
+csuite3:LOADA   cnote,s         ; Charge la note.
+        COMPA   d#0,i           ; Compare à zéro
+        BRLT    cfin            ; Si plus petit que zéro, termine
+        COMPA   d#1000,i        ; Compare la note à 100.
+        BRGT    cfin            ; Si plus grand que 100, termine.
+        LOADA   TRUE,i          ; Initialise le REG A à TRUE
+        STOREA  cval,s          ; Mets la booléen à valide puisque la note est valide.                                                                
+cfin:   ADDSP   d#6,i           ; nettoye la pile
+        RTS              
+
+;*****************************************************************************
+; Routine Multiplication
+; Multiplie deux nombre.
+; PARAMETRE: (PILE) multiplicande de la multiplication
+;            (PILE) multiplicateur de la multiplication
+; RETOURNE:  (PILE) Resultat
+mtempre:.EQUATE  D#0            ; Résultat temporaire de la multiplication.
+mult2:  .EQUATE  D#2            ; Nombre de multiplication de 2.
+msregx: .EQUATE  d#4            ; sauvegarde X
+msrega: .EQUATE  d#6            ; sauvegarde A
+maddret:.EQUATE  d#8            ; adresse de retour
+mnum1:  .EQUATE  d#10           ; multiplicande
+mnum2:  .EQUATE  d#12           ; multiplicateur
+mres:   .EQUATE  d#14           ; resultat
+
+mult:   ADDSP   d#-8,i          ; Sauvegarde pour espace local.
+        STOREX  msregx,s        ; Sauvegarde du reg X.
+        STOREA  msrega,s        ; Sauvegarde du reg A.
+        LOADA   d#0,i           ; Charge 0 dans Reg A.
+        STOREA  mtempre,s       ; Initialise la variable mtempre a 0.
+        LOADA   mnum1,s         ; Charge le multiplicande dans reg A.
+        COMPA   mnum2,s         ; Compare le multiplicande et le multiplieur.
+        BRGE    boumul0         ; Si le multiplieur <= multiplicande, continue.
+        STOREA  mres, s         ; Sauvegarde temporairement le multiplicande.
+        LOADA   mnum2,s         ; Utilise le multiplieur comme multiplicande.
+        STOREA  mnum1,s         ; Sauvegarde le multiplicande.
+        LOADX   mres,s          ; Prends l'ancien multiplicande comme multiplicateur.
+        STOREX  mnum2,s         ; Sauvegarde le multiplicateur.
+boumul0:LOADX   d#2,i           ; Mets le nombre de multiplication de 2 à 2.
+        STOREX  mult2,s         ; 
+        LOADA   mtempre,s       ; Charge le resultat temporaire au cas que la multiplication soit terminé.
+        LOADX   mnum2,s         ; Charge le multiplicateur dans reg X.
+        BREQ    finmul          ; si le multiplicateur est 0 vas à la fin.
+        COMPX   D#1,i           ; Verifie si le multiplicateur est a 1
+        BRNE    msuite1         ; si pas 1, peut multiplié par un multiple de 2.
+        ADDA    mnum1,s         ; Additionne le multiplicande 1 fois
+        BR      finmul          ; La multiplication est terminé.
+msuite1:LOADA   mnum1,s         ; Charge le multiplicande.
+boumul1:LOADX   mnum2,s         ; Charge le multiplicateur puisque dans une boucle.
+        COMPX   mult2,s         ; Verifie si multiple de 2.
+        BRLT    msuite2         ; si pas le cas, termine.
+        ASLA                    ; multiplie par 2 (2)
+        LOADX   mult2,s         ; Charge dans X le nombre de multiple.
+        ASLX                    ; Ajoute un multiple de 2.
+        STOREX  mult2,s         ; Sauvegarde le nombre de multiple.
+        BR      boumul1         ; Continue la multiplication par 2.
+msuite2:LOADX   mult2,s         ; Charge le nombre de multiplication faite.
+        ASRX                    ; Enleve un multiple de 2 puisque initialisé à 2.        
+        ANDX    h#FFFE,i        ; Enleve le 1 si il y a lieu (aucune multiplication faite)
+        STOREX  mult2,s         ; Sauvegarde le nombre de multiplication faite.
+        LOADX   mnum2,s         ; Charge le multiplicateur.
+        SUBX    mult2,s         ; Soustrait le nombre de multiplication faite.
+        STOREX  mnum2,s         ; Sauvegarde le nouveau multiplicateur.
+        ADDA    mtempre,s       ; Additionne le résultat avec le temporaire
+        STOREA  mtempre,s       ; sauvegarde le résultat.
+        BR      boumul0;        ; Continue la multiplication.
+finmul: STOREA  mres,s          ; Sauvegarde le resultat.
+        LOADA   msrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   msregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#8,i           ; nettoye la pile
+        RTS
+
+;*****************************************************************************
+; Routine Division
+; Fait une division
+; PARAMETRE: (PILE) Diviseur
+;            (PILE) Dividende
+; RETOURNE:  (PILE) Resultat
+;            (PILE) Reste
+dnumneg: .EQUATE  D#0           ; Contient le debordement, si la dividende est > 32767.
+dtemmul2:.EQUATE  D#2           ; Nombre de multiplication de 2
+dtotmul2:.EQUATE  D#4           ; Nombre total de multiplication de 2.
+dtnummul:.EQUATE  D#6           ; Nombre a soustraire de la dividende.
+dsregx:  .EQUATE  d#8           ; sauvegarde X
+dsrega:  .EQUATE  d#10          ; sauvegarde A
+dadrret: .EQUATE  d#12          ; adresse de retour
+dnum1:   .EQUATE  d#14          ; dividende
+dnum2:   .EQUATE  d#16          ; diviseur
+dquotie: .EQUATE  d#18          ; quotien
+dreste:  .EQUATE  d#20          ; reste
+
+div:    ADDSP   d#-12,i         ; Sauvegarde pour espace local.
+        STOREX  dsregx,s        ; Sauvegarde du reg X.
+        STOREA  dsrega,s        ; Sauvegarde du reg A.
+        LOADX   d#0,i           ; charge 0 dans reg X.
+        STOREX  dtemmul2,s      ; Initialise dtemmul2 à 0.
+        STOREX  dtotmul2,s      ; Initialise dtotmul2 à 0.
+        STOREX  dtnummul,s      ; initialise dtnumul à 0.
+        STOREX  dnumneg,s       ; Initialise dnumneg à 0.
+        LOADA   dnum2,s         ; Charge le diviseur
+        COMPA   dnum1,s         ; Compare à la dividende
+        BRNE    dsuite0         ; Si les nombres ne sont pas egaux continue.
+        LOADA   d#1,i           ; Mets le quotient à 1.
+        LOADX   d#0,i           ; Mets le reste à 0.
+        BR      dfin            ; Termine.
+dsuite0:LOADA   dnum1,s         ; Charger le dividende
+        BREQ    dfin            ; La dividende est 0, donc pas besoin de faire d'addition.
+        BRGE    dbouc1          ; La dividende est un nombre positif.
+        SUBA    d#32767,i       ; Soustrait 32767 pour transformer le nombre en positif.
+        STOREA  dnum1,s         ; Sauvegarde la nouvelle dividende.
+        LOADA   d#32767,i       ; Charge le débordement dans le reg A.
+        STOREA  dnumneg,s       ; Sauvegarde le débordement.
+dbouc1: LOADA   dtemmul2,s      ; Charge le nombre de multiplication de 2 de la dernière itération.
+        ADDA    dtotmul2,s      ; Additionne le nombre de multiplication total.
+        STOREA  dtotmul2,s      ; Sauvegarde le nombre.
+        LOADA   dnum1,s         ; Charge la dividende.
+        SUBA    dtnummul,s      ; Soustrait le nombre calculé lors de la dernière itération.
+        STOREA  dnum1,s         ; Sauvegarde la nouvelle dividende.
+        SUBA    dnum2,s         ; Soustrait de la dividende le diviseur.
+        SUBA    dnum2,s         ; Soustrait de la dividende le diviseur.
+        BRGE    dsuite2         ; Si possible continue.
+        LOADA   dnum1,s         ; Charge la dividende.
+        COMPA   dnum2,s         ; Compare au reste, savoir si il reste une soustration a faire.
+        BRLT    dsuite1         ; Si aucune soustraction a faire.
+        SUBA    dnum2,s         ; Soustrait 1 fois le diviseur de la dividende.
+        STOREA   dnum1,s        ; Sauvegarde la nouvelle dividende.
+        LOADX   dtotmul2,s      ; Charge le nombre de multiplication.
+        ADDX    d#1,i           ; Additionne 1 au nombre de multiplication.
+        STOREX  dtotmul2,s      ; Sauvegarde le nombre de multiplication.
+dsuite1:LOADA   dtotmul2,s      ; Charge le nombre de multiplication.
+        LOADX   dnum1,s         ; Charge le reste.
+        BR      dfin            ; Termine la multiplication
+dsuite2:LOADX   d#1,i           ; Initialise le reg X à 1.
+        STOREX  dtemmul2,s      ; Sauvegarde le dans le nombre temporaire de multiplication de 2.                 
+        LOADA   dnum2,s         ; Charge le diviseur.
+dbouc2: ASLA                    ; Multiplie le diviseur par 2.
+        BRLT    dbouc1          ; Verifie si le nombre multiplié est negatif,si oui termine la boucle intérieur.
+        COMPA   dnum1,s         ; Est-ce que le nombre calculé est plus grand que la dividende.
+        BRGT    dbouc1          ; Si oui, termine la boucle intérieur.
+        STOREA  dtnummul,s      ; Sauvegarde le nombre à soustraire de la dividende.
+        LOADX   dtemmul2,s      ; Charge le nombre de multiplication faite.
+        ASLX                    ; Multiplie la par 2.
+        STOREX  dtemmul2,s      ; Sauvegarde le nombre de multiplication faite.
+        BR      dbouc2          ; Continue à multiplier par deux.
+dfin:   STOREA  dquotie,s       ; Sauvegarde le quotient.
+        STOREX  dreste,s        ; Sauvegarde le reste.
+        LOADA   dnumneg,s       ; Charge le débordement.
+        BREQ    dsuite3         ; Aucun débordement, termine la multiplication
+        LOADX   dnum2,s         ; Mets le diviseur dans le REG x.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Effectue la division
+        LOADX   d#6,s           ; Lis le résultat. (reste)
+        LOADA   d#4,s           ; Lis le résultat. (quotient)
+        ADDSP   d#8,i           ; Ajuste la pile.
+        ADDA    dquotie,s       ; Additionne les deux quotients.
+        STOREA  dquotie,s       ; Sauvegarde le nouveau quotien.
+        ADDX    dreste,s        ; Additionne les deux restes.
+        STOREX  dreste,s        ; Sauvegarde le nouveau restes.
+        COMPX   dnum2,s         ; Vérifie si les deux restes plus grand que le diviseur.
+        BRLT    dsuite3         ; Si c'est pas le cas la mutliplication est terminé.
+        ADDA    d#1,i           ; Additionne 1 au quotient.
+        SUBX    dnum2,s         ; Soustrait un diviseur au reste.
+        STOREA  dquotie,s       ; Sauvegarde le quotient.
+        STOREX  dreste,s        ; Sauvegarde le reste.
+dsuite3:LOADA   dsrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   dsregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#12,i          ; nettoye la pile
+        RTS
+        
+;*****************************************************************************
+; Routine PourcentageNote
+; Calcul une note selon un pourcentage. 
+; Multiplie par le pourcentage et divise par 100.
+; PARAMETRE: (PILE) Note : Déja multiplié par 100.
+;            (PILE) Pourcentage
+; RETOURNE:  (PILE) Note : Note multiplié par 100.
+;         :  (PILE) Reste: Le reste.
+psregx: .EQUATE  d#0            ; sauvegarde X
+psrega: .EQUATE  d#2            ; sauvegarde A
+paddret:.EQUATE  d#4            ; adresse de retour
+pnote:  .EQUATE  d#6            ; Note
+ppour:  .EQUATE  d#8            ; Pourcentage
+pres:   .EQUATE  d#10           ; resultat
+preste: .EQUATE  d#12           ; reste
+
+pournote:ADDSP   d#-4,i         ; Sauvegarde pour espace local.
+        STOREX  psregx,s        ; Sauvegarde du reg X.
+        STOREA  psrega,s        ; Sauvegarde du reg A.
+        LOADA   pnote,s         ; Charge la note.
+        STOREA  d#-4,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   ppour,s         ; Charge le multiplicateur courant.
+        STOREA  d#-6,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; Multiplie la note par le pourcentage
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.
+        LOADX   d#100,i         ; Mets le diviseur à 100.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Divise la note par 100.
+        LOADA   d#4,s           ; Lis le résultat. (quotient)
+        LOADX   d#6,s           ; Lis le résultat. (reste)
+        ADDSP   d#8,i           ; Ajuste la pile.                
+;Divise la note par 100.        
+pfin:   STOREA  pres,s          ; Sauvegarde la note calculé.
+        STOREX  preste,s        ; Sauvegarde le reste.
+        LOADA   psrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   psregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#4,i           ; nettoye la pile
+        RTS
+        .END        

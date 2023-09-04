@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="XSL01.xsl"?>
+<produits>
+    <produit>
+        <numero>1</numero>
+        <nom>XML</nom>
+        <prix>4</prix>
+        <qtedisponible>1</qtedisponible>
+    </produit>
+    <produit>
+        <numero>2</numero>
+        <nom>EJB</nom>
+        <prix>1200</prix>
+        <qtedisponible>1</qtedisponible>
+    </produit>
+    <produit>
+        <numero>3</numero>
+        <nom>WEB SERVICES</nom>
+        <prix>150</prix>
+        <qtedisponible>2</qtedisponible>
+    </produit>
+</produits>
+

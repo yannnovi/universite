@@ -1,0 +1,191 @@
+///////////////////////////////////////////////////////////////////////////////
+//$Id: exceptions.h,v 1.7 2004/03/01 20:09:01 yann Exp $                     
+//Auteur : Yann Bourdeau (BOUY06097202)
+///////////////////////////////////////////////////////////////////////////////
+#ifndef EXCEPTION_H__
+#define EXCEPTION_H__
+#include <exception>
+using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
+// Classe exception_de_Base
+// Cette classe sert de parent a toute les exceptions definis dans ce source.
+///////////////////////////////////////////////////////////////////////////////
+class Exception_de_base : public exception
+{
+private:
+	string message;
+public:
+///////////////////////////////////////////////////////////////////////////////
+// Constructeur
+// PARAMETRE: char* pErreur: Message contenant la description de l'exception.
+///////////////////////////////////////////////////////////////////////////////
+    Exception_de_base(const char *pErreur):exception()
+    {
+		message=pErreur;
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+// Methode what
+// Retourne la message d'exception.
+// PARAMETRE: AUCUN
+// RETOURNE: char * : Le message d'erreur
+///////////////////////////////////////////////////////////////////////////////
+    const char *what() const
+    {
+        return message.c_str();
+    }
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Classe ErreurLimiteIndice
+// Cette classe sert d'exception dans le cas que les bornes soient invalides dans
+// la classe vecteur.
+///////////////////////////////////////////////////////////////////////////////
+class ErreurBorneInvalide : public Exception_de_base
+{
+public:
+    ///////////////////////////////////////////////////////////////////////////
+    // Constructeur
+    // PARAMETRE: char * pErreur: Message d'erreur expliquant l'exception.
+    ///////////////////////////////////////////////////////////////////////////
+    ErreurBorneInvalide(const char *pErreur):Exception_de_base(pErreur)
+    {
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Methode what
+    // Retourne la message d'exception.
+    // PARAMETRE: AUCUN
+    // RETOURNE: char * : Le message d'erreur
+    ///////////////////////////////////////////////////////////////////////////////
+    const char *what() const
+    {
+        return Exception_de_base::what();
+    }
+
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Classe ErreurLimiteIndice
+// Cette classe sert d'exception dans le cas qu'un indice est hors-borne dans
+// la classe vecteur.
+///////////////////////////////////////////////////////////////////////////////
+class ErreurLimiteIndice : public Exception_de_base
+{
+private:
+    int index; // Contient l'indice hors borne
+    int indexMin; // Contient l'indice minimal valide.
+    int indexMax; // Contient l'indice maximal valide.
+public:
+    ///////////////////////////////////////////////////////////////////////////////
+    // Constructeur
+    // PARAMETRE: char * pErreur: Message d'erreur expliquant l'exception.
+    //            int indice: Indice en erreur
+    //            int indiceMin: Indice minimum valide.
+    //            int indiceMax: Indice maximum valide.
+    ///////////////////////////////////////////////////////////////////////////////
+    ErreurLimiteIndice(const char *pErreur,int indice,int indiceMin,int indiceMax):Exception_de_base(pErreur),index(indice),
+                                                                                   indexMin(indiceMin),indexMax(indiceMax)
+    {
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Methode what
+    // Retourne la message d'exception.
+    // PARAMETRE: AUCUN
+    // RETOURNE: char * : Le message d'erreur
+    ///////////////////////////////////////////////////////////////////////////////
+    const char *what() const
+    {
+        return Exception_de_base::what();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Methode getIndiceEnErreur.
+    // Retourne l'indice en erreur
+    // PARAMETRE: aucun
+    // RETOURNE: int : indice en erreur.
+    ///////////////////////////////////////////////////////////////////////////////
+    int getIndiceEnErreur(void) const
+    {
+        return index;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Methode getIndiceMaximum
+    // Retourne l'indice maximum valide pour le vecteur
+    // PARAMETRE: aucun
+    // RETOURNE: int : indice maximum valide pour le vecteur.
+    ///////////////////////////////////////////////////////////////////////////////
+    int getIndiceMaximum(void) const
+    {
+        return indexMax;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Methode getIndiceMinimum
+    // Retourne l'indice minimum valide pour le vecteur
+    // PARAMETRE: aucun
+    // RETOURNE: int : indice minimum valide pour le vecteur.
+    ///////////////////////////////////////////////////////////////////////////////
+    int getIndiceMinimum(void) const
+    {
+        return indexMin;
+    }
+
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Classe ErreurManqueMemoire
+// Cette classe sert d'exception dans le cas que la classe vecteur manque de
+// memoire.
+///////////////////////////////////////////////////////////////////////////////
+class ErreurManqueMemoire: public Exception_de_base
+{
+public:
+    ///////////////////////////////////////////////////////////////////////////////
+    // Constructeur
+    // Parametre: char *pMsg: Message expliquant l'erreur de l'exception.
+    ///////////////////////////////////////////////////////////////////////////////
+    ErreurManqueMemoire(const char *pMsg):Exception_de_base(pMsg)
+    {
+
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Classe ErreurOuvertureFichier
+// Cette classe sert d'erreur lorsque qu'on ouvre un fichier
+///////////////////////////////////////////////////////////////////////////////
+class ErreurOuvertureFichier: public Exception_de_base
+{
+    char fichier[255]; // contient le nom du fichier
+public:
+    ///////////////////////////////////////////////////////////////////////////////
+    // Constructeur
+    // Parametre: char* pMsg: Nom du fichier qui ne s'ouvre pas.
+    ///////////////////////////////////////////////////////////////////////////////
+    ErreurOuvertureFichier(const char *pFichier):Exception_de_base("Erreur ouverture fichier")
+    {
+        strncpy(fichier,pFichier,255);
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////
+    // Methode getNomFichier
+    // Retourne le nom du fichier en erreur.
+    // PARAMETRE: aucun
+    // Retourne: char *: Nom du fichier en erreur.
+    ///////////////////////////////////////////////////////////////////////////////
+    const char *getNomFichier(void)
+    {
+        return fichier;
+    }
+};
+
+#endif

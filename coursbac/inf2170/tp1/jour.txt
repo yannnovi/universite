@@ -1,0 +1,684 @@
+;*****************************************************************************
+; $Id: jour.txt,v 1.1 2003/07/10 14:54:29 yann Exp $
+;*****************************************************************************
+; Programme: JOUR.TXT                   version PEP7
+;
+; Auteur: Yann Bourdeau
+; Courriel: bourdeau.yann@courrier.uqam.ca
+; date: été 2003
+; cours: INF2170-30
+; 
+; Programme qui affiche le nom du jour selon une date.
+;
+; Le programme vas saisir au clavier l'année, le mois et le jour.
+; Il vas afficher la date saisis et le jour correspondant.
+; Si il y a un champs d'invalide lors de la saisie, il recommence la saisie de
+; la date au complet.
+; Le programme se termine lorsque l'année 0 est saisie.
+;
+; Utilise la formule suivante:
+; date : aaaa-mm-jj (ex:2003-05-24)
+; aaxx := aaaa - 1900
+; absolu := aaxx * 365 + entier((aaxx-1) / 4)
+; + entier((((mm - 1) * 57) + 50) / 100)
+; + (mm - 1) * 30 + jj
+; - (si mm > 2)
+;    1 si bissextile
+;    2 si non-bissextile
+;
+;        jour := absolu mod 7 (0-dimanche, 1-lundi, ...)
+;
+;*****************************************************************************
+; Affiche le message de bienvenue
+        LOADA   welcome,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.
+        
+; Affiche le séparateur
+boucle: LOADA   separat,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.       
+        
+; Affiche la question principal
+        LOADA   question,i      ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.       
+
+; Affiche la question pour l'année.
+        LOADA   questio1,i      ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.       
+        
+; Lire l'année au clavier
+        LOADA   d#4,i           ; Charge le maximum de caractère.
+        STOREA  d#-6,s          ; Sauvegarde le paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.        
+        JSR     lirenum         ; Lis l'année au clavier.
+        LOADA   d#2,s           ; Lis le resultat. (entier)
+        LOADX   d#4,s           ; Lis si il y a une erreur de lecture.
+        ADDSP   d#6,i           ; Ajuste la pile.        
+        COMPX   d#0,i           ; Compare a zéro.
+        BRNE    erran           ; Si erreur, Affiche msg erreur.
+        STOREA  annee,d         ; Sauvegarde l'année.
+        COMPA   d#0,i           ; 
+        BREQ    finprog         ; Compare l'année à 0, sert a determiner la fin du prog.
+        COMPA   D#1901,i        ; Compare l'année à 1901.
+        BRLT    erran           ; Si inférieur à 1901, affiche msg erreur.
+        COMPA   D#2050,i        ; Compare l'année à 2050
+        BRGT    erran           ; Si supérieur à 2050, affiche msg erreur.
+        BR     suitebi          ; Date valide, continue exécution
+  
+; Affiche message d'erreur pour année invalide.        
+erran:  LOADA   dateinv,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.       
+        BR      boucle          ; Recommence la saisie de la date
+
+; Année valide, continue l'execution. Fin de boucle de la saisie de l'année.
+
+; Determine si l'année est bisextile.
+suitebi:LOADX   d#4,i           ; Mets le diviseur a 4.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   annee,d         ; Charge l'année dans le reg A.
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Divise l'année par 4.
+        LOADX   d#6,s           ; Lis le resultat. (reste)
+        ADDSP   d#8,i           ; Ajuste la pile.
+        COMPX   d#0,i           ; Compare le reste a 0 (si 0 divisible par 4)
+        BRNE    nonbi           ; Si pas egale à 0, année non bisextile.
+        LOADX   d#100,i         ; Mets le diviseur à 100.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   annee,d         ; Charge l'année dans le reg A.
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Divise l'année par 100.        
+        LOADX   d#6,s           ; Lis le resultat. (reste)
+        ADDSP   d#8,i           ; Ajuste la pile.        
+        COMPX   d#0,i           ; Compare le reste a 0 (si année divisible par 100)
+        BRNE    bis             ; Si l'année se divise pas par 100, donc bisextile.
+        
+        LOADX   d#400,i         ; mets le diviseur à 400.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   annee,d         ; Charge l'année dans le reg A.
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Effectue la division.
+        LOADX   d#6,s           ; Lis le resultat. (reste)
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        COMPX   d#0,i           ; Compare le reste à 0 (si année divisible par 400).
+        BRNE    nonbi           ; Non bisextile si non divisible par 400.
+        
+bis:    LDBYTA  d#1,i           ; Mets la variable booléen, a vrai
+        STBYTA  bisex,d  
+        LDBYTA  d#29,i          ; Charge le registre A avec le nombre de jour 29 pour l'année bisextile
+        STBYTA  fevrier,d       ; Mets a jour l'entrée dans le tableau pour le mois de février.
+        BR      lismois         ; Continue le traitement.
+        
+nonbi:  LDBYTA  d#0,i           ; Mets la variable booléen, a faux
+        STBYTA  bisex,d
+        LDBYTA  d#28,i          ; Charge le registre A avec le nombre de jour 28 (non bisextile)
+        STBYTA  fevrier,d       ; Mets a jour l'entrée dans le tableau pour le mois de février.
+
+
+; Affiche la question pour le mois. Début de la boucle pour saisie du mois.        
+lismois:LOADA   questio2,i      ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.       
+
+; Lire le mois au clavier
+        LOADA   d#2,i           ; Charge le maximum de caractère.
+        STOREA  d#-6,s          ; Sauvegarde le paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.        
+        JSR     lirenum         ; Lis le mois au clavier.
+        LOADA   d#2,s           ; Lis le resultat. (entier)
+        LOADX   d#4,s           ; Détermine si il y a une erreur.
+        ADDSP   d#6,i           ; Ajuste la pile.        
+        COMPX   D#0,i           ; Verifie le booléen d'erreur.
+        BRNE    errmois         ; Affiche msg erreur.
+        STOREA  mois,d          ; Sauvegarde le mois.
+        COMPA   D#1,i           ; Compare le mois à 1.
+        BRLT    errmois         ; Si mois inférieur à 1, affiche msg erreur.
+        COMPA   D#12,i          ; Compare le mois à 12.
+        BRGT    errmois         ; Si mois supérieur à 12, affiche msg erreur.
+        BR      calnbjr         ; Mois valide, continue exécution.
+
+; Affiche message d'erreur pour mois invalide.
+errmois:LOADA   moisinv,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.               
+        BR      boucle          ; Recommence la saisie de la date.
+; Mois valide, continue l'exécution. Fin de la boucle de la saisie du mois.
+
+;Determine le nombre de jour maximum qui est valide pour le mois.        
+calnbjr:LOADB   tabmois,i       ; Charge l'adresse du tableau dans le REG B
+        LOADX   mois,d          ; Charge le mois courant dans le registre.
+        SUBX    d#1,i           ; Soustrait 1, (le table commence a 0).
+        LOADA   d#0,i           ; Initialise le reg A à 0.
+        LDBYTA ,x               ; Charge le nb de jour du tableau dans reg A.
+        STOREA  maxjour,d       ; Sauvegarde le nb de jour maximum.
+
+; Affiche la question pour le jour. Debut de la boucle du saisie du jour.
+        LOADA   questio3,i      ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas a la sous-routine afficher.       
+        DECO    maxjour,d       ; Affiche le nombre maximum de jour pour le mois.
+        LOADA   finques3,i      ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas a la sous-routine afficher.       
+
+;Lire le jour au clavier.
+        LOADA   d#2,i           ; Charge le maximum de caractère.
+        STOREA  d#-6,s          ; Sauvegarde le paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.        
+        JSR     lirenum         ; Lis le jour au clavier.
+        LOADA   d#2,s           ; Lis le resultat. (entier)
+        LOADX   d#4,s           ; Lis le booléen d'erreur.
+        ADDSP   d#6,i           ; Ajuste la pile.    
+        COMPX   d#0,i           ; Compare le boolean à faux.
+        BRNE    errjour         ; Affiche message d'erreur.
+        STOREA  jour,d          ; Sauvegarde le jour.
+        COMPA   D#1,i           ; Compare le jour à 1.
+        BRLT    errjour         ; Si jour inférieur à 1, affiche msg erreur.
+        COMPA   maxjour,d       ; Compare le jour au nombre de jour dans le mois.
+        BRGT    errjour         ; Si le nombre de jour est supérieur à 31, affiche msg erreur.
+        BR      calcul          ; jour valide, continue exécution.
+
+;Affiche message d'erreur pour jour invalide.
+errjour:LOADA   jourinv,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.               
+        BR      boucle          ; Recommence la saisie de la date.
+
+; Calcul le jour.
+; Affiche la date entrée.
+calcul: LOADA   result,i        ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.               
+        DECO    annee,d         ; Affiche l'année.
+        CHARO   c#/-/,i         ; Affiche le caratère -.
+        LOADA   mois,d          ; Charge le nombre de mois dans reg A.
+        COMPA   d#10,i          ; Verifie si le nombre est plus grand ou egal à 10
+        BRGE    mois10          ; N'affiche pas un zéro si le nombre a deux chiffres.
+        CHARO   c#/0/,i         ; affiche un zéro puisque le nombre a juste 1 chiffre.
+mois10: DECO    mois,d          ; Affiche le mois.
+        CHARO   c#/-/,i         ; Affiche le caratère -.                            
+        LOADA   jour,d          ; Charge le nombre de jour dans reg A.
+        COMPA   d#10,i          ; Verifie si le nombre est plus grand ou egal à 10
+        BRGE    jour10          ; N'affiche pas un zéro si le nombre a deux chiffres.
+        CHARO   c#/0/,i         ; affiche un zéro puisque le nombre a juste 1 chiffre.        
+jour10: DECO    jour,d          ; Affiche le jour.
+        CHARO   H#0a,i          ; Fait saut de ligne.
+
+; Calcul du nombre de jour
+        LOADA   annee,d         ; Charge dans reg A l'année. (aaxx = année - 1900)
+        SUBA    d#1900,i        ; Soustrait 1900. 
+        STOREA  anneexx,d       ; Sauvegarde l'année
+        
+        LOADX   d#365,i         ; Charge le multiplieur dans le reg A.
+        STOREX  d#-4,s          ; Sauvegarde sur la pile le premier paramètre.        
+        STOREA  d#-6,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; Effectue la multiplication. (aaxx * 365)
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.
+        STOREA  nbjour,d        ; Mets le résultat dans la variable nbjour.
+        LOADX   d#4,i           ; Mets le reg X au diviseur 4.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   anneexx,d       ; Charge la variable année dans reg A.
+        SUBA    d#1,i           ; Soustrait 1. (aaxx-1)
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Effectue la division. (aaxx-1) / 4
+        LOADA   d#4,s           ; Lis le resultat. (quotient)
+        ADDSP   d#8,i           ; Ajuste la pile.
+        ADDA    nbjour,d        ; Additionne le nbjour déja calculé (aaxx * 365 ) + ((aaxx-1)/4)
+        STOREA  nbjour,d        ; Sauvegarde le nombre de jour calculé
+        LOADX   d#57,i          ; Mets 57 dans REG X pour le multiplicateur
+        STOREX  D#-4,s          ; Sauvegarde le premiere paramètre.
+        LOADA   mois,d          ; Charge le mois dans le reg A.
+        SUBA    d#1,i           ; soustrait 1. (mm -1 )
+        STOREA  D#-6,s          ; Sauvegarde le deuxième paramètre.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; ((mm-1) *57)
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.        
+        LOADX   d#100,i         ; Mets le reg X a 100 (le diviseur).
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        ADDA    d#50,i          ; ((mm-1) * 57) + 50
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Effectue la division. (((mm-1)*57)+50)/100).
+        LOADA   d#4,s           ; Lis le resultat.(quotient)
+        ADDSP   d#8,i           ; Ajuste la pile.                
+        ADDA    nbjour,d        ; Aditionne le nbjour déja calculé.
+        STOREA  nbjour,d        ; Sauvegarde le nombre de jour.
+        LOADX   d#30,i          ; Mets le reg X à 30 (multiplicateur)
+        STOREX  D#-4,s          ; Sauvegarde sur la pile le paramètre.
+        LOADA   mois,d          ; Charge le mois dans le reg A.
+        SUBA    d#1,i           ; soustrait 1. (mm-1).
+        STOREA  d#-6,s          ; Sauvegarde sur la pile le paramètre.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; (mm-1) * 30
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.                
+        ADDA    jour,d          ; ((mm-1) * 30) + jj
+        ADDA    nbjour,d        ; Nombre de jour déja existant.
+        STOREA  nbjour,d        ; Sauvegarde le nombre de jour.
+        LOADA   mois,d          ; Charge le nombre de mois dans le reg A
+        LOADX   nbjour,d
+        COMPA   d#2,i           ; Compare à 2.
+        BRLE    suite2          ; si plus petit que 3 continue.
+        LOADA   d#0,i           ; Initialise le reg A à 0.
+        LDBYTA  bisex,d         ; Verifie si l'année est bisextile.
+        COMPA   d#1,i           ;
+        BREQ    suite1          ; Si elle  bisextile, soustrait juste 1 jour.
+        SUBX    d#1,i           ; Soustrait 1 jour
+suite1: SUBX    d#1,i           ; Soustrait 1 jour            
+suite2: STOREX  nbjour,d        ; Sauvegarde le nombre de jour.
+        LOADX   d#7,i           ; Mets le reg X a 7 (diviseur)
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   nbjour,d        ; Charge reg A avec le nombre de jour (dividende)
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Effectue la division
+        LOADX   d#6,s           ; Lis le resultat. (reste)
+        ADDSP   d#8,i           ; Ajuste la pile.
+;Affiche le message de resultat
+        LOADA   jourres,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.              
+        ASLX                    ; Multiplie par 2 le registre X, qui contient le reste de la division.
+        BRLT inderr             ; Si l'index negatif, affiche erreur.
+        LOADB   tabjour,i       ; Mets le pointeur du tableau dans reg B.
+        COMPX   h#0c,i          ; Compare a la limite du tableau, pour tester debordement.
+        BRLE    charjou         ; Si ne deborde pas, charge le chaine dans le reg A.
+inderr: LOADX   h#0E,i          ; Mets le reg X a l'index du msg d'erreur.
+
+charjou:LOADA   ,x              ; Charge le pointeur du jour dans le reg A 
+        
+;Affiche le jour.        
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.              
+        CHARO   c#/./,i         ; Affiche un point.
+        CHARO   H#0a,i          ; Fait saut de ligne.
+        
+; Fin de la boucle
+        BR      boucle          ; Boucle au début du programme.
+        
+; Affiche le séparateur
+finprog:CHARO   H#0a,i          ; Saut de ligne.
+        LOADA   separat,i       ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.               
+        LOADA   msgfin,i        ; Charge dans reg A le pointeur du msg.
+        STOREA  d#-2,s          ; sauve reg A sur la pile.
+        ADDSP   d#-2,i          ; Ajuste la pile
+        JSR     affmsg          ; Vas à la sous-routine afficher.                       
+        STOP        
+        
+;*****************************************************************************
+;---- Constantes.
+        welcome:        .ASCII  /Programme qui détermine le jour selon une date/
+                        .BYTE   h#0a    ;ligne suivante.
+                        .ASCII  /Auteur: Yann Bourdeau/
+                        .WORD   h#0A00  ;ligne suivante, Fin de chaine.
+        separat:        .ASCII  /-------------------------------------------------------------------------------/
+                        .WORD   H#0a00  ;ligne suivante, Fin de chaine.
+        question:       .ASCII  /Entrez une date SVP!/                      
+                        .BYTE   h#00    ;Fin de chaine.
+        questio1:       .BYTE   h#0a    ;ligne suivante.
+                        .ASCII  /Année (1901-2050, 0-terminer)?/
+                        .BYTE   H#00    ;fin de chaine.
+        questio2:       .BYTE   h#0a    ;ligne suivante.
+                        .ASCII  /Mois (1-12)?/
+                        .BYTE   H#00    ;fin de chaine.
+        questio3:       .BYTE   h#0a    ;ligne suivante.
+                        .ASCII  /jour (1-/                        
+                        .BYTE   H#00    ;fin de chaine.
+        finques3:       .ASCII  /)?/                        
+                        .BYTE   H#00    ;fin de chaine.        
+        dateinv:        .ASCII  /Entrée invalide: année invalide./
+                        .WORD   H#0a00  ;ligne suivante, Fin de chaine.        
+        moisinv:        .ASCII  /Entrée invalide: Mois invalide./
+                        .WORD   H#0a00  ;ligne suivante, Fin de chaine.                               
+        jourinv:        .ASCII  /Entrée invalide: jour invalide./
+                        .WORD   H#0a00  ;ligne suivante, Fin de chaine.                                                         
+        result:         .BYTE   H#0a    ;ligne suivante.
+                        .ASCII /date entrée: /                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        lundi:          .ASCII /lundi/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        mardi:          .ASCII /mardi/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        mercre:         .ASCII /mercredi/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        jeudi:          .ASCII /jeudi/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        vendre:         .ASCII /vendredi/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        samedi:         .ASCII /samedi/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        dimanc:         .ASCII /dimanche/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        jourres:        .ASCII /C'est un /                        
+                        .BYTE   H#00    ;Fin de chaine.                                                         
+        msgfin:         .ASCII /Fin du programme./                        
+                        .WORD   H#0A00    ;fin de ligne,Fin de chaine.                                          
+        jourerr:        .ASCII /ERREUR/                        
+                        .BYTE   H#00    ;Fin de chaine.                                                                        
+        tabjour:        .ADDRSS dimanc  ; Tableau qui contient les pointeurs des noms des jours.
+                        .ADDRSS lundi
+                        .ADDRSS mardi
+                        .ADDRSS mercre
+                        .ADDRSS jeudi
+                        .ADDRSS vendre
+                        .ADDRSS samedi
+                        .ADDRSS jourerr                      
+;---- Variables.         
+        annee:          .WORD   d#0     ; Contient l'année lus au clavier.
+        anneexx:        .WORD   d#0     ; Contient l'année moins 1901.
+        mois:           .WORD   d#0     ; Contient le mois lus au clavier.                   
+        jour:           .WORD   d#0     ; Contient le jour lus au clavier.
+        nbjour:         .WORD   d#0     ; Contient le nbjour depuis 1-1-1901.
+        bisex:          .BYTE   d#0     ; Booléen qui détermine si l'année courant est bisextile.
+        maxjour:        .WORD   D#0     ; Contient le maximum de jour pour le mois courant.
+        tabmois:        .BYTE   D#31    ; janvier    
+        fevrier:        .BYTE   D#28    ; février, modifier par le programme.
+                        .BYTE   D#31    ; mars
+                        .BYTE   D#30    ; avril
+                        .BYTE   D#31    ; mai
+                        .BYTE   D#30    ; juin
+                        .BYTE   D#31    ; juillet
+                        .BYTE   D#31    ; aout
+                        .BYTE   D#30    ; Septembre
+                        .BYTE   D#31    ; Octobre
+                        .BYTE   D#30    ; Novembre
+                        .BYTE   D#31    ; Decembre               
+;*****************************************************************************                        
+; Routine Afficher
+; Affiche une chaine de caractères jusqu'au caractère fin de chaine.
+; PARAMETRE: (PILE) Pointeur du message.
+;
+vregX:  .EQUATE d#0             ; sauvegarde X
+vregA:  .EQUATE d#2             ; sauvegarde A
+adRet:  .EQUATE d#4             ; adresse de retour
+adMsg:  .EQUATE d#6             ; addresse du message à afficher
+;
+affmsg: ADDSP   d#-4,i          ; espace local sauvegarde
+        STOREA  vregA,s         ; sauvegarde A
+        STOREX  vregX,s         ; sauvegarde X
+        LOADB   adMsg,s         ; Charge le pointeur du message dans le registre B.
+        LOADX   d#0,i           ; Premier caractÞre du message.
+        LOADA   d#0,i           ; Mets le registre A à 0.
+EncorA: LDBYTA  ,x              ; Charge le caratÞre.
+        BREQ    FiniA           ; Si le caractere est la fin de chaine, termine.
+        CHARO   ,x              ; Affiche le caractÞre.
+        ADDX    d#1,i           ; Passe au caractÞre suivant.
+        BR      EncorA          ; Boucle au chargement de caractÞre.
+FiniA:  LOADA   adRet,s         ; adresse retour
+        STOREA  adMsg,s         ; déplacée sur paramètre
+        LOADA   vregA,s         ; Remet registre A à la valeur d'avant l'appel
+        LOADX   vregX,s         ; Remet registre B à la valeur d'avant l'appelr.
+        ADDSP   d#6,i           ; nettoye le pile
+        RTS                     ;
+        
+;*****************************************************************************
+; Routine Multiplication
+; Multiplie deux nombre.
+; PARAMETRE: (PILE) multiplicande de la multiplication
+;            (PILE) multiplicateur de la multiplication
+; RETOURNE:  (PILE) Resultat
+mtempre:.EQUATE  D#0            ; Résultat temporaire de la multiplication.
+mult2:  .EQUATE  D#2            ; Nombre de multiplication de 2.
+msregx: .EQUATE  d#4            ; sauvegarde X
+msrega: .EQUATE  d#6            ; sauvegarde A
+maddret:.EQUATE  d#8            ; adresse de retour
+mnum1:  .EQUATE  d#10           ; multiplicande
+mnum2:  .EQUATE  d#12           ; multiplicateur
+mres:   .EQUATE  d#14           ; resultat
+
+mult:   ADDSP   d#-8,i          ; Sauvegarde pour espace local.
+        STOREX  msregx,s        ; Sauvegarde du reg X.
+        STOREA  msrega,s        ; Sauvegarde du reg A.
+        LOADA   d#0,i           ; Charge 0 dans Reg A.
+        STOREA  mtempre,s       ; Initialise la variable mtempre a 0.
+        LOADA   mnum1,s         ; Charge le multiplicande dans reg A.
+        COMPA   mnum2,s         ; Compare le multiplicande et le multiplieur.
+        BRGE    boumul0         ; Si le multiplieur <= multiplicande, continue.
+        STOREA  mres, s         ; Sauvegarde temporairement le multiplicande.
+        LOADA   mnum2,s         ; Utilise le multiplieur comme multiplicande.
+        STOREA  mnum1,s         ; Sauvegarde le multiplicande.
+        LOADX   mres,s          ; Prends l'ancien multiplicande comme multiplicateur.
+        STOREX  mnum2,s         ; Sauvegarde le multiplicateur.
+boumul0:LOADX   d#2,i           ; Mets le nombre de multiplication de 2 à 2.
+        STOREX  mult2,s         ; 
+        LOADA   mtempre,s       ; Charge le resultat temporaire au cas que la multiplication soit terminé.
+        LOADX   mnum2,s         ; Charge le multiplicateur dans reg X.
+        BREQ    finmul          ; si le multiplicateur est 0 vas à la fin.
+        COMPX   D#1,i           ; Verifie si le multiplicateur est a 1
+        BRNE    msuite1         ; si pas 1, peut multiplié par un multiple de 2.
+        ADDA    mnum1,s         ; Additionne le multiplicande 1 fois
+        BR      finmul          ; La multiplication est terminé.
+msuite1:LOADA   mnum1,s         ; Charge le multiplicande.
+boumul1:LOADX   mnum2,s         ; Charge le multiplicateur puisque dans une boucle.
+        COMPX   mult2,s         ; Verifie si multiple de 2.
+        BRLT    msuite2         ; si pas le cas, termine.
+        ASLA                    ; multiplie par 2 (2)
+        LOADX   mult2,s         ; Charge dans X le nombre de multiple.
+        ASLX                    ; Ajoute un multiple de 2.
+        STOREX  mult2,s         ; Sauvegarde le nombre de multiple.
+        BR      boumul1         ; Continue la multiplication par 2.
+msuite2:LOADX   mult2,s         ; Charge le nombre de multiplication faite.
+        ASRX                    ; Enleve un multiple de 2 puisque initialisé à 2.        
+        ANDX    h#FFFE,i        ; Enleve le 1 si il y a lieu (aucune multiplication faite)
+        STOREX  mult2,s         ; Sauvegarde le nombre de multiplication faite.
+        LOADX   mnum2,s         ; Charge le multiplicateur.
+        SUBX    mult2,s         ; Soustrait le nombre de multiplication faite.
+        STOREX  mnum2,s         ; Sauvegarde le nouveau multiplicateur.
+        ADDA    mtempre,s       ; Additionne le résultat avec le temporaire
+        STOREA  mtempre,s       ; sauvegarde le résultat.
+        BR      boumul0;        ; Continue la multiplication.
+finmul: STOREA  mres,s          ; Sauvegarde le resultat.
+        LOADA   msrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   msregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#8,i           ; nettoye la pile
+        RTS
+
+;*****************************************************************************
+; Routine Division
+; Fait une division
+; PARAMETRE: (PILE) Diviseur
+;            (PILE) Dividende
+; RETOURNE:  (PILE) Resultat
+;            (PILE) Reste
+dnumneg: .EQUATE  D#0           ; Contient le debordement, si la dividende est > 32767.
+dtemmul2:.EQUATE  D#2           ; Nombre de multiplication de 2
+dtotmul2:.EQUATE  D#4           ; Nombre total de multiplication de 2.
+dtnummul:.EQUATE  D#6           ; Nombre a soustraire de la dividende.
+dsregx:  .EQUATE  d#8           ; sauvegarde X
+dsrega:  .EQUATE  d#10          ; sauvegarde A
+dadrret: .EQUATE  d#12          ; adresse de retour
+dnum1:   .EQUATE  d#14          ; dividende
+dnum2:   .EQUATE  d#16          ; diviseur
+dquotie: .EQUATE  d#18          ; quotien
+dreste:  .EQUATE  d#20          ; reste
+
+div:    ADDSP   d#-12,i         ; Sauvegarde pour espace local.
+        STOREX  dsregx,s        ; Sauvegarde du reg X.
+        STOREA  dsrega,s        ; Sauvegarde du reg A.
+        LOADX   d#0,i           ; charge 0 dans reg X.
+        STOREX  dtemmul2,s      ; Initialise dtemmul2 à 0.
+        STOREX  dtotmul2,s      ; Initialise dtotmul2 à 0.
+        STOREX  dtnummul,s      ; initialise dtnumul à 0.
+        STOREX  dnumneg,s       ; Initialise dnumneg à 0.
+        LOADA   dnum1,s         ; Charger le dividende
+        BREQ    dfin            ; La dividende est 0, donc pas besoin de faire d'addition.
+        BRGE    dbouc1          ; La dividende est un nombre positif.
+        SUBA    d#32767,i       ; Soustrait 32767 pour transformer le nombre en positif.
+        STOREA   dnum1,s        ; Sauvegarde la nouvelle dividende.
+        LOADA   d#32767,i       ; Charge le débordement dans le reg A.
+        STOREA  dnumneg,s       ; Sauvegarde le débordement.
+dbouc1: LOADA   dtemmul2,s      ; Charge le nombre de multiplication de 2 de la dernière itération.
+        ADDA    dtotmul2,s      ; Additionne le nombre de multiplication total.
+        STOREA  dtotmul2,s      ; Sauvegarde le nombre.
+        LOADA   dnum1,s         ; Charge la dividende.
+        SUBA    dtnummul,s      ; Soustrait le nombre calculé lors de la dernière itération.
+        STOREA  dnum1,s         ; Sauvegarde la nouvelle dividende.
+        SUBA    dnum2,s         ; Soustrait de la dividende le diviseur.
+        SUBA    dnum2,s         ; Soustrait de la dividende le diviseur.
+        BRGE    dsuite2         ; Si possible continue.
+        LOADA   dnum1,s         ; Charge la dividende.
+        COMPA   dnum2,s         ; Compare au reste, savoir si il reste une soustration a faire.
+        BRLT    dsuite1         ; Si aucune soustraction a faire.
+        SUBA    dnum2,s         ; Soustrait 1 fois le diviseur de la dividende.
+        STOREA   dnum1,s        ; Sauvegarde la nouvelle dividende.
+        LOADX   dtotmul2,s      ; Charge le nombre de multiplication.
+        ADDX    d#1,i           ; Additionne 1 au nombre de multiplication.
+        STOREX  dtotmul2,s      ; Sauvegarde le nombre de multiplication.
+dsuite1:LOADA   dtotmul2,s      ; Charge le nombre de multiplication.
+        LOADX   dnum1,s         ; Charge le reste.
+        BR      dfin            ; Termine la multiplication
+dsuite2:LOADX   d#1,i           ; Initialise le reg X à 1.
+        STOREX  dtemmul2,s      ; Sauvegarde le dans le nombre temporaire de multiplication de 2.                 
+        LOADA   dnum2,s         ; Charge le diviseur.
+dbouc2: ASLA                    ; Multiplie le diviseur par 2.
+        BRLT    dbouc1          ; Verifie si le nombre multiplié est negatif,si oui termine la boucle intérieur.
+        COMPA   dnum1,s         ; Est-ce que le nombre calculé est plus grand que la dividende.
+        BRGE    dbouc1          ; Si oui, termine la boucle intérieur.
+        STOREA  dtnummul,s      ; Sauvegarde le nombre à soustraire de la dividende.
+        LOADX   dtemmul2,s      ; Charge le nombre de multiplication faite.
+        ASLX                    ; Multiplie la par 2.
+        STOREX  dtemmul2,s      ; Sauvegarde le nombre de multiplication faite.
+        BR      dbouc2          ; Continue à multiplier par deux.
+dfin:   STOREA  dquotie,s       ; Sauvegarde le quotient.
+        STOREX  dreste,s        ; Sauvegarde le reste.
+        LOADA   dnumneg,s       ; Charge le débordement.
+        BREQ    dsuite3         ; Aucun débordement, termine la multiplication
+        LOADX   dnum2,s         ; Mets le diviseur dans le REG x.
+        STOREX  d#-6,s          ; Sauvegarde sur la pile le premier paramètre.        
+        STOREA  d#-8,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-8,i          ; Ajuste la pile.        
+        JSR     div             ; Effectue la division
+        LOADX   d#6,s           ; Lis le résultat. (reste)
+        LOADA   d#4,s           ; Lis le résultat. (quotient)
+        ADDSP   d#8,i           ; Ajuste la pile.
+        ADDA    dquotie,s       ; Additionne les deux quotients.
+        STOREA  dquotie,s       ; Sauvegarde le nouveau quotien.
+        ADDX    dreste,s        ; Additionne les deux restes.
+        STOREX  dreste,s        ; Sauvegarde le nouveau restes.
+        COMPX   dnum2,s         ; Vérifie si les deux restes plus grand que le diviseur.
+        BRLT    dsuite3         ; Si c'est pas le cas la mutliplication est terminé.
+        ADDA    d#1,i           ; Additionne 1 au quotient.
+        SUBX    dnum2,s         ; Soustrait un diviseur au reste.
+        STOREA  dquotie,s       ; Sauvegarde le quotient.
+        STOREX  dreste,s        ; Sauvegarde le reste.
+dsuite3:LOADA   dsrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   dsregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#12,i          ; nettoye la pile
+        RTS
+;*****************************************************************************
+; Routine lirenum
+; Lis un nombre au clavier et le transforme en entier!
+; PARAMETRE: (PILE) Nombre de caractères.
+; RETOURNE:  (PILE) Resultat
+;            (PILE) Boléen qui indique si il y a eu une erreur a la saisie.
+lmult:  .EQUATE  D#0            ; Contient le multiplicateur de 10 à la x courant.
+lsregx: .EQUATE  d#2            ; sauvegarde X
+lsrega: .EQUATE  d#4            ; sauvegarde A
+ladrret:.EQUATE  d#6            ; adresse de retour
+lmax:   .EQUATE  d#8            ; Nombre de Caractere.
+lresult:.EQUATE  d#10           ; resultat
+lerr:   .EQUATE  d#12           ; erreur
+
+
+lirenum:ADDSP   d#-6,i          ; Sauvegarde pour espace local.
+        STOREX  lsregx,s        ; Sauvegarde du reg X.
+        STOREA  lsrega,s        ; Sauvegarde du reg A.
+        LOADA   lmax,s          ; Charge la longueur maximum.
+        ADDA    d#1,i           ; Additionne un pour le CR.
+        STOREA  lmax,s          ; Sauvegarde la longueur maximum.
+;Initialise la chaine de caractère a 0.
+        LOADA   D#1,i           ; Initialise le reg A a 1.
+        STOREA  lmult,s         ; Mets lmult à 0.
+        LOADA   d#0,i           ; Initialise le reg A a zéro.
+        STOREA  lresult,s       ; Mets lresult à zéro.
+        STOREA  lerr,s          ; Mets la variable booléen a faux.
+        LOADX   d#28,i          ; Place l'index sur le dernier mot de la chaine de caractère.
+        LOADB   chaine,i        ; Charge le pointer de la chaine dans le reg B.
+lbouc0: STOREA  ,x              ; Initialise deux caractères a 0 dans la chaine.
+        SUBX    d#2,i           ; Soustrait l'index deux caractères.
+        BRNE    lbouc0          ; Si l'index est supérieur à 0, continuer.
+lbouc1: chari   ,x              ; Lis un caractère dans la chaine.
+        LDBYTA  ,x              ; Charge la caractère lus.
+        COMPA   d#10,i          ; Verifie si line feed.
+        BRNE    lsuite1         ; Si pas un line feed continue
+        LOADA   d#0, i          ; initialise le reg A à 0.
+        STBYTA  ,x              ; Mets fin de ligne a la place de line feed.
+        BR      llecfin         ; La chaine est lus.
+lsuite1:ADDX    d#1,i           ; Incrémente l'index
+        COMPX   lmax,s          ; Compare avec la taille à lire.
+        BRLT    lbouc1          ; continue si inférieur.
+;Vide le buffer de lecture jusqu'au line feed.        
+        LOADA   d#0,i
+lbouc2: CHARI   chaine,d        ; Mets le caratère dans la première position.
+        LDBYTA  chaine,d        ; Charge lE caractère.
+        COMPA   d#10,i          ; Compare au line feed.
+        BRNE    lbouc2          ; Boucle si pas line feed.           
+        BR      lerreur         ; Plus long que la longueur max, vas à erreur.
+; calcule la chaine lus.        
+llecfin:LOADX   lmax,s          ; Initialise reg X à la fin de la chaine.        
+lbouc3: LOADA   d#0,i           ; Initialise le reg A à zéro.
+        LDBYTA  ,x              ; Charge le caractère
+        BREQ    lsuite2         ; Fin de chaine continue
+        COMPA   h#30,i          ; Compare au caractère 0.
+        BRLT    lerreur         ; Si plus petit vas à erreur.
+        COMPA   h#39,i          ; Compare au caractère 9.
+        BRGT    lerreur         ; Si plus grand vas à erreur.
+        SUBA    h#30,i          ; Soustrait le caractère 0 du chiffre.
+        STOREA  d#-4,s          ; Sauvegarde sur la pile le premier paramètre.        
+        LOADA   lmult,s         ; Charge le multiplicateur courant.
+        STOREA  d#-6,s          ; Sauvegarde le deuxième paramètre sur le pile.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; Effectue la multiplication. 
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.        
+        ADDA    lresult,s       ; Ajoute le nombre calculé au résultat.
+        STOREA  lresult,s       ; Sauvegarde le nouveau résultat.
+        LOADA   d#10,i          ; Charge le multiplicateur.
+        STOREA  d#-4,s          ; Sauvegarde sur la pile le premier paramètre.                 
+        LOADA   lmult,s         ; Charge le multipliant.
+        STOREA  d#-6,s          ; Sauvegarde sur la pile le deuxième paramètre.
+        ADDSP   d#-6,i          ; Ajuste la pile.
+        JSR     mult            ; Effectue la multiplication. 
+        LOADA   d#4,s           ; Lis le resultat.
+        ADDSP   d#6,i           ; Ajuste la pile.                
+        STOREA  lmult,s         ; Sauvegarde le résultat.
+lsuite2:SUBX    d#1,i           ; Soustrait le reg X de 1.
+        BRLT    lconfin         ; Rendus au début de l'index, continue.
+        BR      lbouc3          ; Continue au caractère précédent.
+lerreur:LOADA   d#1,i           ; Initialise le reg A à 1.
+        STOREA  lerr,s          ; Mets le booléen a vrai.
+        LOADA   d#0,i           ; Mets le résultat à 0.
+        STOREA  lresult,s       ; Sauvegarde le resultat.
+lconfin:LOADA   lsrega,s        ; Charge le contenue antérieur du reg A.
+        LOADX   lsregx,s        ; Charge le contenue antérieur du reg X.
+        ADDSP   d#6,i           ; nettoye la pile
+        RTS
+;---- Variable de la routine lirenum
+chaine:  .BLOCK  d#30        
+        .END

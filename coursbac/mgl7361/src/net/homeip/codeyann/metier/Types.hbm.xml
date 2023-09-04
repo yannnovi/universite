@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="net.homeip.codeyann.metier.Types" table="types"> 
+    	<id
+         	name="char"
+         	column="testchar"
+         	type="character">
+         	<generator class="assigned"/> 
+      	</id>
+        <property name="byte" column="testbyte"/>
+        <property name="short" column="testshort"/>
+        <property name="int" column="testint"/>
+        <property name="long" column="testlong"/>
+        <property name="float" column="testfloat"/>
+        <property name="double" column="testdouble"/>
+        <property name="boolean" column="testboolean"/>
+    </class>
+</hibernate-mapping>

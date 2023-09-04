@@ -1,0 +1,213 @@
+INF3140 - TP1
+Hiver 2004 Groupe 30
+Par
+Yann Bourdeau BOUY06097202
+Sebastien Grand GRAS06088207
+-------------------------------------------------------------------------------
+#1)a)1) 
+        CONCEPT metro_montreal: type
+        WHERE metro_montreal = set {ligne}
+
+#1)a)2)
+        CONCEPT ligne: type        
+        WHERE ligne = sequence {station}  
+        
+#1)a)3)
+        CONCEPT station: type
+
+#1)a)4)
+        CONCEPT une_sortie: type
+        
+        CONCEPT sortie (s:station) VALUE(l:set{une_sortie})
+        
+
+#1)a)5)
+        CONCEPT nb_guichet(s:station) VALUE (b:nat)
+
+        
+#1)b)1) 
+        CONCEPT contigu(l:ligne, s1 s2: station) VALUE (b:boolean)
+        WHERE b <=> (subsequence([s1,s2],l) | subsequence([s2,s1],l))
+        
+#1)b)2) CONCEPT degre(s: station,m: metro_montreal) VALUE (n:nat)
+        WHERE n = SUM (l:ligne SUCH THAT l IN m & s IN l :: nb_station_contigue_sur_ligne(l,s) )
+        
+        CONCEPT nb_station_contigue_sur_ligne (l:ligne,s:station) VALUE (n:nat)
+        WHERE n= SUM(s: station SUCH THAT s IN l & (l[1] = s | l[length(l)] = s) :: 1)
+                 +
+                 SUM(s: station SUCH THAT s IN l & ~(l[1] = s | l[length(l)] = s) :: 2)
+
+#1)b)3) CONCEPT intersection (m:metro_montreal, s:station) VALUE (b:boolean)
+        WHERE b <=> (NUMBER(l :ligne SUCH THAT l IN m  & s IN l::l) >= 2)
+
+#1)b)4) CONCEPT fin_de_ligne(m:metro_montreal, s:station) VALUE (b:boolean)
+        WHERE b <=> ALL (l:ligne SUCH THAT l IN m & s IN l :: fin_fin_de_ligne(l,s))
+        
+        CONCEPT fin_fin_de_ligne(l:ligne,s:station) VALUE (b:boolean)
+        WHERE b <=> l[length(l)]=s | l[1]=s 
+        
+#1)b)5) 
+
+#1)c)1) CONCEPT contrainte1 (s:station) VALUE (b:boolean)
+        WHERE b <=> size(sortie(s)) >= nb_guichet(s)
+        
+#1)c)2) CONCEPT contrainte2 (s:station) VALUE (b:boolean)
+        WHERE b <=> (nb_guichet(s) =1 ) | (nb_guichet(s) = 2)
+
+
+
+
+
+
+#1)c)3) CONCEPT contrainte3 (l1 l2:ligne,m: metro_montreal) VALUE (b:boolean)
+        WHERE b <=> NUMBER(l1 l2 :ligne , s1 s2 : station SUCH THAT l1 IN m & l2 IN m & ~(l1=l2) &
+                         s1 IN l1 & s1 IN l2 & s2 IN l1 & s2 IN l2 & ~ (s1=s2):: s1) >= 2
+        
+#1)c)4) CONCEPT contrainte4 (l1: ligne, m: metro_montreal) VALUE (b:boolean)
+        WHERE b <=> ALL(l1:ligne SUCH THAT l1 IN m :: length(l1) >=2)
+        
+#1)c)5) CONCEPT contrainte5 (s1 s2: station) VALUE (b:boolean)
+        WHERE b <=> true
+        -- Nous pouvons en effet parler de tautologie car il est toujours possible
+        -- de trouver deux chemins differents entre deux stations ( peu importe leurs
+        -- localisation ). 
+        -- Demonstration : Soit A B: station, je peux faire simplement le trajet A->B.
+        -- ou alors naviguer de A vers B puis de nouveau de B vers A et enfin de A vers B.
+        -- Bien entendu on sera passe par B a plus d'une reprise mais il n'empeche que l'on
+        -- se retrouve en B au final. 
+         
+      
+-------------------------------------------------------------------------------
+#2) 1) Invalide puisque un } de trop
+
+#2) 2) Invalide puisque puisque dans la premier couple il y a une erreur de typage. 
+       Il devrait y avoir cle de type set{nat} et non de type nat.
+
+#2) 3) CONCEPT x:sequence{sequence{sequence{sequence{set{sequence{nat}}}}}}}
+         WHERE x=[[],[[]],[[[{[2]},{}]]]] 
+
+#2) 4) CONCEPT x:map{map{boolean,sequence{nat}},sequence{boolean}}
+         WHERE x={[{[true,[1,2]];!},[true]],[{[false,[]];!},[]];!}
+         
+#2) 5) CONCEPT x:map{integer,map{integer,sequence{nat}}}
+         WHERE x={[0,{[1,[0]];[]}],[1,{[1,[0]];[1]}],[-1, {[-1, [0]]; [ ]}]; !}
+
+-------------------------------------------------------------------------------
+#3) a)
+
+s1 = [ [1], [4..3], [1, 3, 5], [1, -3, 5, -7], [0, -1, -2, -3], [ ] ]
+s2 = [ [3, 1, 5],[ ],[-5,-1,-3],[2, 4,-6,-8],[1..5],[12,-12],[-5, 4, -3,-2, 1, 0] ]
+
+1) ( length(remove([ ], s1))+ 2 = length(s2) ) = false
+     
+2) PRODUCT(i:integer, s:sequence{integer} SUCH THAT (s IN s1 | s IN s2)& (i IN s)::i)= 0
+
+3) PRODUCT(s: sequence{integer} SUCH THAT (s IN s1& s IN s2)::length(s) + 3) = 3
+
+4) SOME(i : nat :: length(s1[i]) > length (s2[i]) ) = ! , out of bound
+
+5) {x y : sequence{integer} SUCH THAT x IN s1 & y IN s2 
+        & length(x) = 3 & length(y) = 3 :: x || y } = {[1,3,5,3,1,5],[1,3,5,-5,-1,-3]}
+        
+6) (s1[4][2] + s2[2][4])= !
+        puisque il n'y a pas 4 elements dans la sequence 2 (out of bound).
+
+7) ( (s1[2] || s2[2])= remove(s1, [s1] : sequence{sequence{sequence{integer}}} ) )= true
+
+8) SUM(i : nat SUCH THAT i IN s2[3] :: 3 * i + 1)= 0
+
+9) ( ALL(s:sequence{integer} SUCH THAT s IN s1 ::(length(s)=2) => (s=[ ]|s IN s2))) = true
+
+10) length(remove([ ], s2) || [ ] || remove([ ], s1) ) = 10
+
+-------------------------------------------------------------------------------
+#3) b)
+
+e1 = {{ 1..4},{3..2},{0, 1, 9},{0},{1},{1, 9},{2, 4, 6, 8, 0}}
+e2 = {{1, 3, 5, 7, 9},{ },{1, 0, 9},{1, 3, 2, 4},{11, 7, 5, 3, 2},{2},{2, 3},{7..0}}
+
+1) ( size(e1) = size(e2) )= true
+
+2) NUMBER(x: set{nat} SUCH THAT (x IN e1 => x IN e2) :: x) = ! valeur indefinie
+
+3) intersection(e1, e2)= {{1,2,3,4},{},{0,1,9}}
+
+4) (e1[2] = e2[2])= ! l'operateur [] n'est pas definis pour les ensembles
+
+5) ALL(x y: set{nat}SUCH THAT x IN e2 & y IN e1 :: size(x) > size(y) )= false
+
+6) MINIMUM(x:set{nat}SUCH THAT x =f g& (x IN e1) & (x IN e2) :: size(x) )= 0
+
+7) UNION(x:set{nat}SUCH THAT x IN e1 :: {x}) = {{1,2,3,4},{},{0,1,9},{0},{1},{1,9},{2,4,6,8,0}} (=e1)
+
+8) SUM(x: set{nat}SUCH THAT x IN e1 :: size(e1))= 49
+
+9) ALL(i: nat SUCH THAT (2 | i) & (0 <= i <= 10) :: i IN e1) = !
+        puisque i devrait etre un set de {nat} pour pouvoir fair i in e1
+
+10) INTERSECTION(x:set{nat} SUCH THAT (x IN e1) & (size(x) = 2 | size(x) = 3) :: x) = {1,9}
+
+-------------------------------------------------------------------------------
+#3) c)
+
+d1 = {[4.0, 4], [3.2, 3], [-2.3, -3], [0.0, 0] ; 100}
+d2 = {[2, 4.0], [1, 2.0], [0, 0.0], [-3, 4.0] ; 100.0}
+
+1) domain(d1) = {4.0,3.2,-2.3,0.0}
+
+2) range(d2) = {100.0,4.0,2.0,0.0}
+
+3) bind(0, 0.0, bind(2, 100.0, d2))= {[1,2.0],[0,0.0],[-3,4.0];100.0}
+
+4) (d1[d2[2] ] + d1[d2[1] ]) = 104
+
+5) (NUMBER(x: real, y: nat SUCH THAT d1[x] = y & d2[y] = x ::
+[x, nat to real(y)]: sequence{real}) > 1)= true
+
+6) remove(ALL(x:integer :: x < 0), d2) = !
+        puisque erreur de type all retourne un boolean et non une
+        cle.
+
+7) SUM(i:nat SUCH THAT i IN d2 :: d2[d1[d2[i] - 4.0] + 1]) = 302.0
+
+8) size(fx:sequence{nat,real} SUCH THAT x IN d2 :: xg)= !
+        puisque cela n'est pas une sequence de (nat real), qui est
+        impossible, qu'il faut chercher mais une sequence de {nat}
+
+9) (default(d1) IN real | default(d2) IN nat) = false
+
+10) MAXIMUM(x:real SUCH THAT (x IN d1) | x IN range(d2) :: x) = 100.0
+
+-------------------------------------------------------------------------------
+#4)1)
+        CONCEPT v1:boolean 
+        WHERE v1 = (length(s2) = MAXIMUM(domain(d1))) 
+                   & 
+                   ALL(i:nat SUCH THAT 1<= i <=length(s2):: s2[i] = true 
+                   <=> (SOME(s:nat,d1: map{nat,nat} SUCH THAT s IN domain(d1) :: i = s & d1[i]= i)))
+
+
+           
+#4)2)   CONCEPT v2:boolean
+        WHERE v2 = (MAXIMUM( x:nat SUCH THAT x IN range(d1) :: x ) = 
+		    NUMBER ( y:nat SUCH THAT y IN domain (s2) & s2[y] = true :: y ) &
+                    MINIMUM( w:nat SUCH THAT w IN domain(d1) :: w ) = 
+		    NUMBER ( z:nat SUCH THAT z IN domain ( s2 ) &  s2[z] = false :: z)  )
+                                         
+#4)3) 
+     CONCEPT v3:boolean
+        WHERE v3 = PRODUCT(x:nat SUCH THAT x IN domain(d1) :: x) 
+        < 
+        (SUM(y:nat SUCH THAT y IN range(d1)::y) * NUMBER (w:boolean SUCH THAT w IN s2::w))
+
+        
+#4)4)
+        CONCEPT v4:boolean
+        WHERE v4 = ALL(n:nat SUCH THAT  0 < n <= length(s2) &  s2[n]=true :: d1[n]=1) &
+                   ALL(m:nat SUCH THAT  0 < m <= length(s2) &  s2[m]=false :: d1[m]=0)
+
+#5)5)                   
+CONCEPT v5:boolean
+        WHERE v5 = (domain(d1) =  UNION(x:nat SUCH THAT 0<x<=length(s2)::{x + default(d1) } )) 
+        & 
+        ALL( y:nat SUCH THAT 0<y<=length(s2) :: s2[y] = true <=> d1[y] > default(d1)) 

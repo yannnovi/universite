@@ -1,0 +1,24 @@
+n
+Killer Tomato
+Roger Tomate
+Grosse Tomate
+1
+1.0
+horreur
+general
+
+n
+Killer Apple
+Roger Pomme
+Grosse Pomme
+1
+1.0
+comedie
+general
+
+t
+horreur
+
+q
+
+

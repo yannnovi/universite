@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+    <class name="net.homeip.codeyann.metier.AssociationA" table="association_a">
+    	<id
+         	name="index"
+         	column="indexa"> 
+         	<generator class="assigned"/> 
+      	</id>
+      	<many-to-one name="associationB" 
+        	column="indexb"
+        	not-null="true"
+            cascade="all"/>
+
+        <many-to-one name="associationC" 
+        	column="indexc"
+        	not-null="true"
+			cascade="all"/>
+    </class>
+    
+    <class name="net.homeip.codeyann.metier.AssociationB" table="association_b">
+    	<id
+         	name="index"
+         	column="index">
+         	<generator class="assigned"/>
+      	</id>     	
+    </class>
+    
+    <class name="net.homeip.codeyann.metier.AssociationC" table="association_c">
+    	<id
+         	name="index"
+         	column="index">
+         	<generator class="assigned"/>
+      	</id>
+    </class>
+    
+</hibernate-mapping>

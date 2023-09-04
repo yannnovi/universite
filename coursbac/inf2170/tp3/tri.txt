@@ -1,0 +1,666 @@
+; *****************************************************************************
+; $Id: tri.txt,v 1.8 2003/07/17 02:48:34 yann Exp $
+; *****************************************************************************
+; Programme: TRI.TXT                   version PEP7
+;
+; Auteur: Yann Bourdeau
+; Courriel: bourdeau.yann@courrier.uqam.ca
+; date: Été 2003
+; cours: INF2170-30
+;
+; Programme qui tri des nombres romains. Le programme saisie jusqu'à 20 nombres
+; romains sur 40 caractères.
+;
+; Le programme fonctionne de la facons suivante:
+; - Lis une chaine de 40 caractères.
+;       Si chaine vide, termine le programme.
+;
+; - Analyse la chaine en faisant un tableau de 20 éléments et chaque élément
+;   Contient la valeur décimal du chiffre romain et l'adresse du début
+;   du nombre romain dans la chaine lus. Si la valeur décimal est à 0,
+;   l'élément n'est pas utilisé.
+;
+; - Tris le tableau de avec un tri par bulle en ordre croissant.
+;
+; - Affiche les données du tableau.
+; *****************************************************************************
+MAXCAR:   .EQUATE d#40       ; Commence à zéro.
+MAXNOMB:  .EQUATE d#20       ; Nombre maximum de nombre.
+MAXIND:   .EQUATE d#76       ; Index du dernier élément.
+TRUE:     .EQUATE d#1
+FALSE:    .EQUATE d#0
+TABVAL:   .EQUATE d#0
+TABADR:   .EQUATE d#2
+TABINT:   .EQUATE d#4
+; Début du programme
+          LOADA   welcome,i  ; Charge dans reg A le pointeur du msg.
+          STOREA  d#-2,s     ; sauve reg A sur la pile.
+          ADDSP   d#-2,i     ; Ajuste la pile
+          JSR     affmsg     ; Vas à la sous-routine afficher.
+          LOADA   separat,i  ; Charge le séparateur.
+          STOREA  d#-2,s     ; Sauvegarde le pointeur comme paramètre.
+          ADDSP   d#-2,i     ; Ajuste la pile.
+          JSR     affmsg     ; Affiche le message.
+boucle:   LOADA   question,i ; Charge dans reg A le pointeur du msg.
+          STOREA  d#-2,s     ; sauve reg A sur la pile.
+          ADDSP   d#-2,i     ; Ajuste la pile
+          JSR     affmsg     ; Vas à la sous-routine afficher.
+
+; Lis la chaîne
+          LOADA   MAXCAR,i   ; Initialise le registre A au maximum de caractère de la chaîne
+          STOREA  d#-6,s     ; Sauvegarde la paramètre sur la pile
+          ADDSP   d#-6,i     ; Ajuste la pile.
+          JSR     lischai    ; Appele la routine pour lire une chaîne
+          LOADX   d#0,s      ; Charge la nombre de caractère lus.
+          LOADA   d#2,s      ; Charge l'adresse de la chaîne.
+          STOREA  addrchai,d ; Sauvegarde l'adresse.
+          ADDSP   d#4,i      ; Ajuste la pile.
+          COMPX   d#0,i      ; Compare la nombre de caractère lus à 0.
+          BREQ    fin        ; Si 0, termine le programme.
+          COMPX   MAXCAR,i   ; Compare la chaîne au nombre de caracter maximum
+          BRLE    suite1     ; Si plus petit égal que le maximum, continue
+          BR      afferr     ; Affiche le message d'erreur.
+
+; Valide la chaîne
+suite1:   STOREA  d#-8,s     ; Sauvegarde sur la pile, l'adresse de la chaine.
+          LOADA   tableau,i  ; Charge l'adresse du tableau.
+          STOREA  d#-6,s     ; Sauvegarde le paramètre
+          ADDSP   d#-8,i     ; Ajuste la pile.
+          JSR     anchai     ; Appele la routine qui analyse la chaine.
+          LOADX   d#0,s      ; Charge le booléen de validité de chaine.
+          LOADA   d#2,s      ; Charge le nombre de nombre romains lus.
+          ADDSP   d#4,i      ; Ajuste la pile.
+          COMPX   TRUE,i     ; Vérifie si la fonction a retourné OK.
+          BREQ    suite3     ; Oui, continue le traitement.
+          BR      afferr     ; Affiche le message d'erreur.
+
+suite3:   LOADA   tableau,i  ; Charge l'adresse du tableau dans le registre A.
+          STOREA  d#-2,s     ; Sauvegarde le paramètre.
+          ADDSP   d#-2,i     ; Ajuste la pile.
+          JSR     trie       ; Trie le tableau.
+
+; Affiche le résultat
+          LOADA   res,i      ; Charge dans reg A le pointeur du msg.
+          STOREA  d#-2,s     ; sauve reg A sur la pile.
+          ADDSP   d#-2,i     ; Ajuste la pile
+          JSR     affmsg     ; Vas à la sous-routine afficher.
+
+          LOADX   d#0,i      ; Initialise l'index à 0.
+          STOREX  comp,d     ; Initialise le compteur à 0.
+          STOREX  drap,d     ; Initialise le drapeau a faux.
+boucle3:  LOADB   tableau,i  ; Charge l'adresse du tableau.
+          STOREX  indtab,d   ; Sauvegarde l'index du tableau.
+          LOADA   ,x         ; Charge la valeur
+          BRLE    suite7     ; Si la valeur est 0, plus de nombre.
+          STOREA  valeur,d   ; Sauvegarde la valeur décimale
+          ADDX    d#2,i      ; Passe au champs suivant.
+          LOADA   ,x         ; Charge l'adresse de la chaine du nombre romain.
+          STOREA  adresse,d  ; Sauvegarde l'adresse.
+          LOADA   drap,d     ; Charge l'indicateur du premier nombre affiché
+          BREQ    suite4     ; Il est toujours a faux.
+          CHARO   c#/,/,i    ; Affiche une virgule.
+suite4:   LOADA   TRUE,i     ; Initialise le drapeau a VRAI.
+          STOREA  drap,d     ;
+          LOADA   comp,d     ; Charge le compteur.
+          COMPA   d#3,i      ; Compare à 3.
+          BRLT    suite5     ; Continue le traitement si plus petit.
+          CHARO   h#0A,i     ; Fait un saut de ligne.
+          LOADA   vide,i     ; Charge dans reg A le pointeur du msg.
+          STOREA  d#-2,s     ; sauve reg A sur la pile.
+          ADDSP   d#-2,i     ; Ajuste la pile
+          JSR     affmsg     ; Vas à la sous-routine afficher.
+          LOADA   d#0,i      ; Mets le compteur à zéro.
+suite5:   ADDA    d#1,i      ; Additionne 1 au compteur.
+          STOREA  comp,d     ; Sauvegarde le compteur.
+          LOADB   adresse,d  ; Charge l'adresse.
+          LOADX   d#0,i      ; Mets l'index à 0.
+          LOADA   d#0,i      ; Initialise reg à 0.
+boucle4:  LDBYTA  ,x
+          COMPA   c#/ /,i    ; Compare à une espace.
+          BREQ    suite6     ; Si égale, la chaine est afficher.
+          COMPA   d#0,i      ; Compare à fin de chaine
+          BREQ    suite6     ; Si égale, la chaine est afficher.
+          CHARO   ,x         ; Affiche le caractère.
+          ADDX    d#1,i      ; Passe au caractère suivant.
+          BR      boucle4    ; Boucle
+suite6:   CHARO   c#/(/,i    ;
+          DECO    valeur,d   ; Affiche la valeur.
+          CHARO   c#/)/,i    ;
+          LOADX   indtab,d   ; Charge l'index du tableau.
+          ADDX    TABINT,i   ; Passe a la rangé suivante dans le tableau.
+          BR      boucle3    ;
+
+; Affiche message erreur quand trop de caractères.
+afferr:   LOADA   err,i      ; Charge dans reg A le pointeur du msg.
+          STOREA  d#-2,s     ; sauve reg A sur la pile.
+          ADDSP   d#-2,i     ; Ajuste la pile
+          JSR     affmsg     ; Vas à la sous-routine afficher.
+
+; Fin du traitement.
+suite7:   CHARO   h#0A,i     ; Fait un saut de ligne.
+          LOADA   separat,i  ; Charge le séparateur.
+          STOREA  d#-2,s     ; Sauvegarde le pointeur comme paramètre.
+          ADDSP   d#-2,i     ; Ajuste la pile.
+          JSR     affmsg     ; Affiche le message.
+          LOADA   d#0,i      ; Mets le tableau à 0.
+          LOADB   tableau,i  ; Charge l'adresse du tableau.
+          LOADX   d#0,i      ; Vas au premiere élément.
+boucle5:  STOREA  ,x         ; Initialise la première partie de l'élément.
+          ADDX    d#2,i      ; Passe au mots suivant.
+          STOREA  ,x         ; Initialise la deuxième partie de l'élément.
+          ADDX    d#2,i      ; Passe au mots suivants.
+          COMPX   MAXIND,i   ; Compare l'index courant à celui du dernier élément.
+          BRLE    boucle5    ; Continue à initialiser les éléments.
+          BR      boucle     ; Boucle le programme.
+fin:      LOADA   finprg,i   ; Charge le message de la fin du programme.
+          STOREA  d#-2,s     ; Sauvegarde le pointeur comme paramètre.
+          ADDSP   d#-2,i     ; Ajuste la pile.
+          JSR     affmsg     ; Affiche le message.
+          STOP               ; Termine le programme
+; *****************************************************************************
+; ---- Constantes.
+welcome:  .ASCII  /Programme qui tri des nombres romains./
+          .BYTE   h#0A       ; ligne suivante.
+          .ASCII  /Auteur: Yann Bourdeau/
+          .BYTE   h#0A       ; ligne suivante.
+          .BYTE   h#0A       ; ligne suivante.
+          .ASCII  /Le programme saisie jusqu'à 20 nombres romains sur 40 caractères./
+          .BYTE   h#0A       ; ligne suivante.
+          .ASCII  /Les nombres sont triés en ordre croissant/
+          .BYTE   h#0A       ; ligne suivante.
+          .WORD   h#0A00     ; ligne suivante, Fin de chaîne.
+question: .ASCII  /Entrez les nombres romains (Ligne vide pour terminer):/
+          .BYTE   d#0        ; Fin de chaîne.
+separat:  .ASCII  /-------------------------------------------------------------------------------/
+          .WORD   h#0A00     ; ligne suivante, Fin de chaîne.
+res:      .ASCII  /Nombres triés:/
+          .BYTE   d#0        ; Fin de chaine.
+vide:     .ASCII  /              /
+          .BYTE   d#0        ; Fin de chaine.
+finprg:   .BYTE   h#0A       ; Ligne suivante
+          .ASCII  /-------------------------------------------------------------------------------/
+          .BYTE   h#0A       ; Ligne suivante
+          .ASCII  /Fin du programme./
+          .BYTE   d#0        ; Fin de chaine.
+err:      .ASCII  /Entrée invalide./
+          .WORD   h#0A00     ; ligne suivante, Fin de chaîne.
+; ----- Variables
+addrchai: .WORD   d#0        ; Contient l'adresse de la chaine lus.
+tableau:  .BLOCK  d#80       ; Contient le tableau de forme WORD WORD
+                             ; Premier WORD - valeur décimal du chiffre romain
+                             ; deuxième WORD - Adresse de la chaine du nombre
+                             ;    romain.
+          .WORD   d#0        ; Indique la fin du tableau, plus rapide que calculer l'index.
+valeur:   .WORD   d#0        ; Variable temporaire, contient la valeur décimal d'un nombre romain.
+adresse:  .WORD   d#0        ; Variable temporaire, contient l'adresse de la chaine à afficher.
+indtab:   .WORD   d#0        ; Index dans le tableau.
+comp:     .WORD   d#0        ; Compteur du nombre de nombre par ligne.
+drap:     .WORD   d#0        ; Drapeau qui indique que le premier nombre a été affiché.
+
+; *****************************************************************************
+; Routine Afficher
+; Affiche une chaîne de caractères jusqu'au caractère fin de chaîne.
+; PARAMETRE: (PILE) Pointeur du message.
+;
+vregX:    .EQUATE d#0        ; sauvegarde X
+vregA:    .EQUATE d#2        ; sauvegarde A
+adRet:    .EQUATE d#4        ; adresse de retour
+adMsg:    .EQUATE d#6        ; addresse du message à afficher
+;
+affmsg:   ADDSP   d#-4,i     ; espace local sauvegarde
+          STOREA  vregA,s    ; sauvegarde A
+          STOREX  vregX,s    ; sauvegarde X
+          LOADB   adMsg,s    ; Charge le pointeur du message dans le registre B.
+          LOADX   d#0,i      ; Premier caractÞre du message.
+          LOADA   d#0,i      ; Mets le registre A à 0.
+EncorA:   LDBYTA  ,x         ; Charge le caratÞre.
+          BREQ    FiniA      ; Si le caractere est la fin de chaîne, termine.
+          CHARO   ,x         ; Affiche le caractère.
+          ADDX    d#1,i      ; Passe au caractÞre suivant.
+          BR      EncorA     ; Boucle au chargement de caractÞre.
+FiniA:    LOADA   adRet,s    ; adresse retour
+          STOREA  adMsg,s    ; déplacée sur paramètre
+          LOADA   vregA,s    ; Remet registre A à la valeur d'avant l'appel
+          LOADX   vregX,s    ; Remet registre B à la valeur d'avant l'appel.
+          ADDSP   d#6,i      ; nettoye le pile
+          RTS                ;
+
+; *****************************************************************************
+; Routine LireChaine
+; Lis une chaîne de X caractere(s) au clavier. La routine retourne le nombre
+; de caractère lus et l'adresse de la chaîne. La chaîne ne peut pas etre
+; plus longue que 254 caractères.
+; Cette routine n'est pas ré-entrante. Le contenus de la chaîne vas etre
+; perdus lors d'un second appele a cette fonction.
+; PARAMETRE: (PILE) Taille maximum de la chaîne.
+; RETOUR: (PILE) Nombre de caractère lus. Si plus grand que taille maximum, indique une erreur.
+; RETOUR: (PILE) Adresse de la chaîne lus.
+
+lsregx:   .EQUATE d#0        ; sauvegarde X
+lsrega:   .EQUATE d#2        ; sauvegarde A
+laddret:  .EQUATE d#4        ; adresse de retour
+lmaxchai: .EQUATE d#6        ; Paramètre: Nombre de caractère maximum de la chaîne.
+lnumcar:  .EQUATE d#8        ; Retour: Nombre de caractère lus.
+lptrchai: .EQUATE d#10       ; Retour: Adresse de la chaîne lus.
+
+MAXBUF:   .EQUATE d#254
+
+lischai:  ADDSP   d#-4,i     ; Sauvegarde pour espace local.
+          STOREX  lsregx,s   ; Sauvegarde du reg X.
+          STOREA  lsrega,s   ; Sauvegarde du reg A.
+          LOADA   chaine,i   ; Lis l'adresse de la chaîne.
+          STOREA  lptrchai,s ; Sauvegarde l'adresse de la chaîne.
+          LOADA   d#0,i      ;
+          STOREA  lnumcar,s  ; Initialise le nombre de caractère à zéro.
+          LOADX   d#0,i      ; Initialise l'index à 0.
+          LOADB   chaine,i   ; Mets l'adresse de la chaîne à zero.
+lbouc1:   STOREA  ,x         ; Initialise la chaîne à 0.
+          ADDX    d#2,i      ; passe au mot suivant.
+          COMPX   MAXBUF,i   ; Compare à la taille maximum.
+          BRGE    lsuit1     ; Termine la boucle si plus grand egal à 1024.
+          BR      lbouc1     ; Boucle.
+lsuit1:   LOADX   d#0,i      ; Initialise l'index à 0.
+lbouc2:   CHARI   ,x         ; Lis un caractère au clavier.
+          LDBYTA  ,x         ; Charge le caractère lus dans le reg A.
+          COMPA   d#10,i     ; Compare au line feed.
+          BRNE    lsuit2     ; Continue le traitement si pas line feed
+          LOADA   d#0,i      ; Initialise le reg A à fin de chaîne.
+          STBYTA  ,x         ; Remplace le caractère line feed par fin de chaîne.
+          BR      lfin       ; Vas à la fin.
+lsuit2:   ADDX    d#1,i      ; Passe à la position du caractère suivant.
+          COMPX   lmaxchai,s ; Compare l'index au maximum de la chaîne.
+          BRLE    lbouc2     ; Continue le traitement si la chaîne n'as pas dépassé son maximum.
+          COMPX   MAXBUF,i   ; Compare l'index au maximum d'espace pour la chaîne.
+          BRLT    lbouc2     ; Continue le traitement si la chaîne n'as pas dépassé son maximum.
+
+; Vide le buffer de lecture jusqu'au line feed.
+          LOADX   d#0,i      ; Mets l'index à 0.
+          LOADA   d#0,i      ; Initialise le reg a à 0.
+lbouc3:   CHARI   ,x         ; Mets le caratère dans la première position.
+          LDBYTA  ,x         ; Charge le caractère.
+          COMPA   d#10,i     ; Compare au line feed.
+          BRNE    lbouc3     ; Boucle si pas line feed.
+
+          LOADX   lmaxchai,i ; Initialise la chaîne à la taille maximum.
+          ADDX    d#1,i      ; Ajoute 1 à la taille de la chaîne pour déclarer l'erreur.
+
+
+lfin:     STOREX  lnumcar,s  ; Sauvegarde le nombre de caractère lus.
+          LOADA   laddret,s  ; Mets l'adresse de retour sur le dernier paramètre.
+          STOREA  lmaxchai,s ;
+          LOADA   lsrega,s   ; Charge le contenue antérieur du reg A.
+          LOADX   lsregx,s   ; Charge le contenue antérieur du reg X.
+          ADDSP   d#6,i      ; nettoye la pile
+          RTS
+; ---- Variable de la routine lischai
+chaine:   .BLOCK  d#255
+
+; *****************************************************************************
+; Routine AnalyseChaine
+; Cette routine analyse une chaîne pour trouver jusqu'a 20 nombres romains.
+; La routine determine si il y a des caractères invalides.
+;
+; Paramètre: (PILE) Pointeur de la chaîne.
+;            (PILE) Pointeur de tableau de 20 éléments.
+;                    FORMAT:
+;                     WORD (Nombre décimal), WORD (Adresse de la chaine)
+; RETOUR: (PILE) Booléen (WORD) qui indique si la chaîne est valide.
+;         (PILE) Nombre de note trouvé
+;
+adebind:  .EQUATE d#0        ; Contient l'index du debut de l'élément.
+afinind:  .EQUATE d#2        ; Contient l'index de fin de l'élément.
+asregx:   .EQUATE d#4        ; sauvegarde X
+asrega:   .EQUATE d#6        ; sauvegarde A
+aaddret:  .EQUATE d#8        ; adresse de retour
+achaine:  .EQUATE d#10       ; Paramètre: Chaine à analyser.
+atablea:  .EQUATE d#12       ; Paramètre: Adresse du tableau.
+aval:     .EQUATE d#14       ; Retour: Booléen qui détermine si la chaine est valide.
+anum:     .EQUATE d#16       ; Retour: nombre de nombre romain trouvé
+
+
+anchai:   ADDSP   d#-8,i     ; Sauvegarde pour espace local.
+          STOREX  lsregx,s   ; Sauvegarde du reg X.
+          STOREA  lsrega,s   ; Sauvegarde du reg A.
+          LOADX   FALSE,i    ; Initialise reg X à FALSE.
+          STOREX  aval,s     ; Initialise la variable aval.
+          LOADX   d#0,i      ; Initialise la position de la chaine.
+          STOREX  anum,s     ; Initialise anum à 0.
+          LOADA   d#0,i      ; Initialise le reg A à 0.
+          LOADB   achaine,s  ; Charge l'adresse de la chaine dans le reg de base.
+; Trouve le début d'un nombre romain.
+abouc1:   LDBYTA  ,x         ; Charge le caractère courant de la chaine.
+          BREQ    avide      ; Si fin de chaine, donnée invalide, termine
+          COMPA   c#/ /,i    ; Vérifie si espace
+          BRNE    asuite1    ; Si cela n'est pas un espace, continue le traitement.
+          ADDX    d#1,i      ; Passe au caractère suivant.
+          BR      abouc1     ; Continue la boucle.
+asuite1:  STOREX  adebind,s  ; Sauvegarde l'index du début de la note.
+
+; Trouve la fin de la note
+abouc2:   LDBYTA  ,x         ; Charge le caractère courant de la chaine
+          BREQ    asuite2    ; Fin du nombre romain.
+          COMPA   c#/ /,i    ; Vérifie si espace
+          BREQ    asuite2    ; Fin du nombre romain.
+          ADDX    d#1,i      ; Passe au caractère suivant.
+          BR      abouc2     ; Continue la boucle
+asuite2:  STOREX  afinind,s  ; Sauvegarde l'index de la fin de note.
+
+; Analyse la note trouvé
+          LOADA   achaine,s  ; Charge l'adresse de la chaine dans le REG A.
+          ADDA    adebind,s  ; Additionne l'index de début.
+          STOREA  d#-6,s     ; Sauvegarde sur la pile, l'adresse de la chaine.
+          LOADA   afinind,s  ; Charge l'index de la fin de la note.
+          SUBA    adebind,s  ; Soustrait l'index du debut
+          STOREA  d#-8,s     ; Sauvegarde sur la pile, la longueur.
+          ADDSP   d#-8,i     ; Ajuste la pile.
+          JSR     convnom    ; Appele la routine qui convertis le nombre!
+          LOADX   d#0,s      ; Charge le booléen qui détermine si le nombre est valide.
+          LOADA   d#2,s      ; Charge la nombre
+          ADDSP   d#4,i      ; ajuste la pile.
+          COMPX   TRUE,i     ; Vérifie si la note est valide.
+          BREQ    asuite3    ; Continue le traitement si valide.
+          LOADX   FALSE,i    ; Mets la variable aval FALSE.
+          STOREX  aval,s     ;
+          BR      afin       ; Termine le traitement.
+asuite3:  LOADB   atablea,s  ; Charge l'adresse du tableau.
+          LOADX   anum,s     ; Charge le nombre de nombre lus.
+          ASLX               ; Multiplie par 2 ( tableau élément de 4)
+          ASLX               ; Multiplie par 2 ( tableau élément de 4)
+          STOREA  ,x         ; Sauvegarde le nombre decimal
+          ADDX    d#2,i      ; Passe à la deuxième partie de l'élément.
+          LOADA   achaine,s  ; Charge l'adresse de la chaine dans Reg A.
+          ADDA    adebind,s  ; Vas à la position du début du nombre romain.
+          STOREA  ,x         ; Sauvegarde l'adresse du nombre romain.
+          LOADA   anum,s     ; Incrémente le nombre de nombre.
+          ADDA    d#1,i      ;
+          STOREA  anum,s     ; Sauvegarde le nombre de nombre.
+          COMPA   MAXNOMB,i  ; Vérifie qu'il y a pas plus que 20 nombres.
+          BRLE    asuite4    ; Si plus petit continue le traitement
+          LOADX   FALSE,i    ; Mets la variable aval à FALSE.
+          STOREX  aval,s     ;
+          BR      afin       ; Termine le traitement.
+asuite4:  LOADX   TRUE,i     ; Mets la variable aval à TRUE.
+          STOREX  aval,s     ;
+          LOADX   afinind,s  ; Charge l'index du dernière caractère du dernier nombre.
+          ADDX    d#1,i      ; Additionne 1 pour passer au suivant.
+          LOADA   d#0,i      ; Initialise le reg A à 0 pour être utiliser avec ldbyta
+          LOADB   achaine,s  ; Recharge l'adresse de la chaine dans le registre de base. Enlever a l'appel de la sous-routine.
+          BR      abouc1     ; Recommence le traitement pour le nombre suivant.
+avide:    LOADX   TRUE,i     ; Mets la variable aval à TRUE.
+          STOREX  aval,s     ;
+afin:     LOADA   aaddret,s  ; Déplace l'adresse de retour sur le dernier paramètre.
+          STOREA  atablea,s  ;
+          LOADA   asrega,s   ; Charge le contenue antérieur du reg A.
+          LOADX   asregx,s   ; Charge le contenue antérieur du reg X.
+          ADDSP   d#12,i     ; nettoye la pile
+          RTS
+
+; *****************************************************************************
+; Routine Trie
+; Cette routine trie un tableau qui a deux WORDS par rangé.
+;
+; Paramètre: (PILE) Le tableau
+tifin:    .EQUATE d#0        ; Index du dernier élément.
+tibouc1:  .EQUATE d#2        ; Index de la boucle 1.
+tibouc2:  .EQUATE d#4        ; Index de la boucle 2.
+ttaddr:   .EQUATE d#6        ; Adresse temporaire.
+ttval:    .EQUATE d#8        ; Valeur temporaire.
+tsregx:   .EQUATE d#10       ; sauvegarde X
+tsrega:   .EQUATE d#12       ; sauvegarde A
+taddret:  .EQUATE d#14       ; adresse de retour
+ttab:     .EQUATE d#16       ; Tableau
+
+trie:     ADDSP   d#-14,i
+          STOREA  tsrega,d   ; Sauvegarde le reg A.
+          STOREX  tsregx,d   ; Sauvegarde le reg X.
+
+; Détermine le nombre d'élément dans le tableau.
+          LOADB   ttab,s     ; Charge l'adresse du tableau.
+          LOADX   d#0,i      ; Initialise l'index à 0.
+tbouc0:   LOADA   ,x         ; Charge la valeur.
+          BREQ    tsuite1    ; Si la valeur est 0, le nombre d'élément a été determiner.
+          ADDX    TABINT,i   ; Passe à la rangé suivante.
+          BR      tbouc0     ; Continue la boucle.
+tsuite1:  SUBX    TABINT,i   ; Recule pour tomber sur la première position.
+          BREQ    tfin       ; Si il y a juste un élément, termine!
+          STOREX  tifin,s    ; Sauvegarde la position du dernier élément.
+          LOADX   d#0,i      ; Initialise l'index à zéro.
+tbouc1:   STOREX  tibouc1,s  ; Sauvegarde l'index de la boucle1.
+          COMPX   tifin,s    ; Compare à la position de la fin.
+          BRGE    tfin       ; Si plus grand egal, termine.
+          LOADX   d#0,i      ; Initialise l'index à zéro.
+tbouc2:   STOREX  tibouc2,s  ; Sauvegarde l'index de la boucle2.
+          COMPX   tifin,s    ; Compare à la position de la fin.
+          BRGE    tsuite3    ; Si plus grand egal, termine boucle 2.
+; Échange les deux rangé.
+          LOADA   ,x         ; Charge la valeur
+          STOREA  ttval,s    ; Sauvegarde la valeur.
+          ADDX    TABADR,i   ; Passe à l'adresse.
+          LOADA   ,x         ; Charge l'adresse.
+          STOREA  ttaddr,s   ; Sauvegarde l'adresse.
+          LOADX   tibouc2,s  ; Charge l'index courant.
+          ADDX    TABINT,i   ; Passe à la rangé suivante.
+          LOADA   ,x         ; Charge la valeur.
+          COMPA   ttval,s    ; Compare à la valeur précedent.
+          BRGE    tsuite2    ; Si la valeur est plus grande, fait rien.
+          LOADX   tibouc2,s  ; Charge l'index courant.
+          STOREA  ,x         ; Sauvegarde l'élément.
+          ADDX    TABINT,i   ; Vas à la rangé suivante.
+          LOADA   ttval,s    ; Charge la valeur.
+          STOREA  ,x         ; Sauvegarde la valeur.
+          ADDX    TABADR,i   ; Vas chercher l'adresse.
+          LOADA   ,x         ; Charge l'adresse
+          LOADX   tibouc2,s  ; Charge l'index de la boucle 2.
+          ADDX    TABADR,i   ; Vas a l'adresse.
+          STOREA  ,x         ; Sauvegarde l'adresse.
+          LOADX   tibouc2,s  ; Charge l'index de la boucle 2.
+          ADDX    TABINT,i   ; Vas à la rangé suivante.
+          ADDX    TABADR,i   ; Vas à l'adresse.
+          LOADA   ttaddr,s   ; Charge l'adresse.
+          STOREA  ,x         ; Sauvegarde l'adresse.
+tsuite2:  LOADX   tibouc2,s  ; Charge l'index de la boucle 2.
+          ADDX    TABINT,i   ; Passe à la rangé suivante.
+          BR      tbouc2     ; Boucle.
+
+tsuite3:  LOADX   tibouc1,s  ; Charge l'index de la boucle 1.
+          ADDX    TABINT,i   ; Passe à la rangé suivante.
+          BR      tbouc1     ; Boucle.
+
+tfin:     LOADA   taddret,s  ; Déplace l'adresse de retour dans le paramétre.
+          STOREA  ttab,s     ;
+          LOADA   tsrega,s   ; Charge la valeur du reg A
+          LOADX   tsregx,s   ; Charge la valeur du reg X
+          ADDSP   d#16,i     ; Ajuste la pile.
+          RTS
+
+; *****************************************************************************
+; Routine ConvertisNombre
+; Cette routine convertis un nombre romain en nombre décimal.
+; La routine determine si il y a des caractères invalides.
+;
+; Paramètre: (PILE) Pointeur sur la chaine qui contient la note.
+;            (PILE) Longueur de la chaine à analyser
+; RETOUR: (PILE) Booléen (WORD) qui indique si le nombre est valide.
+;         (PILE) mots qui contient le nombre décimal
+;
+ROMCAR:   .EQUATE d#0
+ROMREP:   .EQUATE d#1
+ROMVAL:   .EQUATE d#2
+ROMSOU:   .EQUATE d#4
+ROMENT:   .EQUATE d#5
+
+cindad:   .EQUATE d#0        ; Index de l'avant dernier nombre qui précède un nombre plus
+cindd:    .EQUATE d#2        ; Index du dernier nombre qui précède le nombre lus.
+                             ; Pas la même chose que cindcar puisque pas initialisé à la meme valeur.
+cnompre:  .EQUATE d#4        ; Index du dernier nombre qui précède un nombre plus grand.
+cnomrep:  .EQUATE d#6        ; Nombre de fois que le caractère est repeter
+cicourta: .EQUATE d#8        ; Index courant dans le tableau
+cnomcou:  .EQUATE d#10       ; Nombre de la chaine courante.
+cindcar:  .EQUATE d#12       ; Index du dernier caractère du nombre romain lus dans le tableau.
+cposcou:  .EQUATE d#14       ; Index dans la chaine.
+csregx:   .EQUATE d#16       ; sauvegarde X
+csrega:   .EQUATE d#18       ; sauvegarde A
+caddret:  .EQUATE d#20       ; adresse de retour
+clong:    .EQUATE d#22       ; Paramètre: Longueur de la chaine.
+cchaine:  .EQUATE d#24       ; Paramètre: Chaine à analyser.
+cval:     .EQUATE d#26       ; retour: Booléen qui détermine si le résultat est valide.
+cnomb:    .EQUATE d#28       ; Retour: Nombre décimal
+
+convnom:  ADDSP   d#-20,i    ; Sauvegarde pour espace local.
+          STOREX  lsregx,s   ; Sauvegarde du reg X.
+          STOREA  lsrega,s   ; Sauvegarde du reg A.
+          LOADX   FALSE,i    ; Initialise le Reg X à FALSE.
+          STOREX  cval,s     ; Initialise cval à fALSE.
+          LOADX   d#255,i    ;
+          STOREX  cnompre,s  ; Initialise cnompre à 255.
+          STOREX  cindad,s   ; Initialise cindad à 255.
+          STOREX  cindd,s    ; Initialise cindd à 255.
+          LOADX   d#0,i      ;
+          STOREX  cindcar,s  ; Initialise l'index du dernier caractère lus à zéro.
+          STOREX  cnomcou,s  ; Initialise le nombre courant à zéro.
+          STOREX  cnomrep,s  ; Initialise cnomrep à 0.
+          STOREX  cnomb,s    ; Initialise cnomb à 0.
+          LOADA   d#0,i      ; Initialise le reg A à zero.
+          LOADX   clong,s    ; Vas à la dernière position de la chaine.
+          SUBX    d#1,i      ; (longueur - 1)
+          LOADA   d#0,i      ; Initialise le reg A à zero.
+cbouc1:   LOADB   cchaine,s  ; Initialise le registre de base à la chaine.
+          LDBYTA  ,x         ; Charge le dernier caractère.
+          STOREA  cnomcou,s  ; Sauvegarde le nombre lus.
+          STOREX  cposcou,s  ; Sauvegarde l'index de la chaine.
+          LOADB   cnomrom,i  ; Charge l'adresse du tableau des nombres romains
+          LOADX   d#0,i      ; Mets l'index à la premiere position.
+cbouc2:   LDBYTA  ,x         ; Charge le nombre romain.
+          COMPA   cnomcou,s  ; Compare au nombre lus.
+          BREQ    csuite     ; Si non pareil continue le traitement
+          COMPX   d#28,i     ; Vérifie si le tableau de ne deborde pas.
+          BRGE    cerr       ; Termine le traitement si il y a un débordement.
+          ADDX    ROMENT,i   ; Passe à l'entrée suivante dans le tableau.
+          BR      cbouc2     ; Continue la boucle.
+csuite:   STOREX  cicourta,s ; Sauvegarde l'index courant dans le tableau
+          COMPX   cindcar,s  ; Compare à l'index du dernier caractère lus.
+          BRNE    csuite3    ; Si pas pareil que le dernier lus, continue le traitement
+
+; C'est un nombre qui est répeter.
+          LOADA   cnomrep,s  ; Charge le nombre de répétition du nombre.
+          COMPA   d#3,i      ; Compare à trois
+          BRGE    cerr       ; Si plus que 3 caractère pareil, erreur.
+          LOADX   cicourta,s ; Charge l'index courant dans le tableau.
+          ADDX    ROMREP,i   ; Passe au deuxième champs de l'enregistrement.
+          LOADA   d#0,i      ; Initialise le reg A à zéro.
+          LDBYTA  ,x         ; Charge l'attribut (repeter 3 fois)du nombre
+          COMPA   FALSE,i    ; Verifie si le nombre peut être repeter 3 fois.
+          BREQ    cerr       ; Si non termine, le nombre est repeter.
+          LOADA   cnomrep,s  ; Charge le nombre de répétition du nombre.
+          COMPA   d#3,i      ; Compare à trois.
+          BRGE    cerr       ; Si supérieur égal à 3 termine (commence à 0)
+          ADDA    d#1,i      ; Incrémente le nombre de répétition de 1.
+          STOREA  cnomrep,s  ; Sauvegarde le nombre de répétition
+          LOADX   cicourta,s ; Charge l'index courant dans le tableau.
+          ADDX    ROMVAL,i   ; Passe au troisième champs de l'enregistrement.
+          LOADA   ,x         ; Charge la valeur décimal du nombre romain.
+          ADDA    cnomb,s    ; Additionne le nombre déja calculé.
+          STOREA  cnomb,s    ; Sauvegarde le nouveau nombre calculé.
+          BR      csuite10   ; Continue le traitement sur le prochain nombre.
+
+; c'est un nouveau nombre.
+csuite3:  LOADA   d#0,i      ; Initialise le reg A à zéro.
+          STOREA  cnomrep,s  ; Sauvegarde le nombre de répétition du nombre.
+          COMPX   cindcar,s  ; Compare à l'index du dernier caractère lus.
+          BRGT    csuite6    ; Si plus grand continue le traitement.
+
+; C'est un nouveau nombre plus petit.
+          LOADX   cicourta,s ; Charge l'index courant dans le tableau.
+          ADDX    ROMSOU,i   ; Vas au quatrième champs de l'enregistrement.
+          LOADA   d#0,i      ; Initialise le REG A à zéro.
+          LDBYTA  ,x         ; Charge si le nombre peut etre soustrait.
+          BREQ    cerr       ; Ne peut être soustrait, termine.
+          LOADX   cicourta,s ; Charge l'index courant dans le tableau.
+          COMPX   cnompre,s  ; Compare au dernier nombre précédent un plus grand nombre.
+          BREQ    cerr       ; Le même, erreur!
+          COMPX   cindad,s   ; Compare à l'avant dernier nombre précédent, vérifie que c'est pas le meme.
+          BREQ    cerr       ; Le même, erreur!
+          STOREX  cnompre,s  ; Sauvegarde le nouveau index.
+          LOADA   cindcar,s  ; Charger l'index du dernier caractère lus.
+          SUBA    cicourta,s ; Soustrait l'index du nombre courant.
+          BRLT    cerr       ; Si negatif, erreur.
+          ASRA               ; Divise par 2.
+          ASRA               ; Divise par 2.
+          COMPA   d#2,i      ; Compare à 2 puisque le nombre soustrait ne doit pas être à plus que deux index de moins que l'index du nombre courant.
+          BRGT    cerr       ; Si plus grand erreur.
+          LOADX   cicourta,s ; Charge l'index courant dans le tableau.
+          ADDX    ROMVAL,i   ; Vas au quatrième champs de l'enregistrement.
+          LOADA   cnomb,s    ; Charge le nombre déja calculé.
+          SUBA    ,x         ; Soustrait la valeur du nombre lus.
+          STOREA  cnomb,s    ; Sauvegarde le nouveau nombre.
+          BR      csuite11   ; Continue le traitement.
+
+; C'est un nouveau nombre plus grand.
+csuite6:  LOADX   cicourta,s ; Charge l'index courant dans le tableau.
+          ADDX    ROMVAL,i   ; Vas au quatrième champs de l'enregistrement.
+          LOADA   ,x         ; Charge la valeur du nombre.
+          ADDA    cnomb,s    ; Additionne le nombre déja calculé.
+          STOREA  cnomb,s    ; Sauvegarde le nombre déja calcule.
+csuite10: LOADA   cicourta,s ; Charge l'index dans le tableau.
+          STOREA  cindcar,s  ; Sauvegarde comme étant l'index du dernier caractère lus.
+csuite11: LOADA   cicourta,s ; Charge l'index dans le tableau.
+          LOADX   cindd,s    ; Charge l'index du nombre précédent.
+          STOREX  cindad,s   ; Le sauvegarde comme l'avant dernier.
+          STOREA  cindd,s    ; Sauvegarde l'index du dernier nombre lus.
+          LOADX   cposcou,s  ; Charge l'index dans la chaine.
+          SUBX    d#1,i      ; soustrait 1 de l'index.
+          BRLT    cok        ; Si négatif, termine
+          STOREX  cposcou,s  ; Sauvegarde l'index
+          BR      cbouc1     ; Passe au nombre suivant.
+cok:      LOADA   cnomb,s    ; Charge le nombre calculé.
+          COMPA   d#3999,i   ; Compare à 3999.
+          BRGT    cerr       ; Si plus grand, erreur
+          LOADA   TRUE,i     ; Mets la variable cval à true.
+          STOREA  cval,s     ;
+          BR      cfin
+cerr:     LOADA   FALSE,i    ; Mets la variable cval à false.
+          STOREA  cval,s     ;
+cfin:     LOADA   caddret,s  ; Déplace l'adresse du retour sur le dernier paramètre.
+          STOREA  cchaine,s  ;
+          LOADX   lsregx,s   ; Sauvegarde du reg X.
+          LOADA   lsrega,s   ; Sauvegarde du reg A.
+          ADDSP   d#24,i     ; nettoye la pile
+          RTS
+; *****************************************************************************
+; ---- Constantes de la routine convertisnombre
+cnomrom:  .ASCII  /I/        ; Caractère romain I
+          .BYTE   d#1        ; Indique que le nombre peut se repeter 3 fois
+          .WORD   d#1        ; Valeur décimal du cactère I
+          .BYTE   d#1        ; Indique que le nombre peut etre soustrait.
+                             ; ------------
+          .ASCII  /V/        ; Caractère romain V
+          .BYTE   d#0        ; Indique que le nombre ne peut se repeter 3 fois
+          .WORD   d#5        ; Valeur décimal du cactère V
+          .BYTE   d#0        ; Indique que le nombre ne peut etre soustrait.
+                             ; ------------
+          .ASCII  /X/        ; Caractère romain X
+          .BYTE   d#1        ; Indique que le nombre peut se repeter 3 fois
+          .WORD   d#10       ; Valeur décimal du cactère X
+          .BYTE   d#1        ; Indique que le nombre peut etre soustrait.
+                             ; ------------
+          .ASCII  /L/        ; Caractère romain L
+          .BYTE   d#0        ; Indique que le nombre ne peut se repeter 3 fois
+          .WORD   d#50       ; Valeur décimal du cactère L
+          .BYTE   d#0        ; Indique que le nombre ne peut etre soustrait.
+                             ; ------------
+          .ASCII  /C/        ; Caractère romain C
+          .BYTE   d#1        ; Indique que le nombre peut se repeter 3 fois
+          .WORD   d#100      ; Valeur décimal du cactère C
+          .BYTE   d#1        ; Indique que le nombre peut etre soustrait.
+                             ; ------------
+          .ASCII  /D/        ; Caractère romain D
+          .BYTE   d#0        ; Indique que le nombre ne peut se repeter 3 fois
+          .WORD   d#500      ; Valeur décimal du cactère D
+          .BYTE   d#0        ; Indique que le nombre ne peut etre soustrait.
+                             ; ------------
+          .ASCII  /M/        ; Caractère romain M
+          .BYTE   d#1        ; Indique que le nombre peut se repeter 3 fois
+          .WORD   d#1000     ; Valeur décimal du cactère M
+          .BYTE   d#1        ; Indique que le nombre peut etre soustrait.
+                             ; ------------
+          .END

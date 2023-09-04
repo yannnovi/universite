@@ -1,0 +1,98 @@
+{VERSION 5 0 "IBM INTEL NT" "5.0" }
+{USTYLETAB {CSTYLE "Maple Input" -1 0 "Courier" 0 1 255 0 0 1 0 1 0 0 
+1 0 0 0 0 1 }{CSTYLE "2D Math" -1 2 "Times" 0 1 0 0 0 0 0 0 2 0 0 0 0 
+0 0 1 }{CSTYLE "2D Output" 2 20 "" 0 1 0 0 255 1 0 0 0 0 0 0 0 0 0 1 }
+{PSTYLE "Normal" -1 0 1 {CSTYLE "" -1 -1 "Times" 1 12 0 0 0 1 2 2 2 2 
+2 2 1 1 1 1 }1 1 0 0 0 0 1 0 1 0 2 2 0 1 }{PSTYLE "Maple Output" -1 
+11 1 {CSTYLE "" -1 -1 "Times" 1 12 0 0 0 1 2 2 2 2 2 2 1 1 1 1 }3 3 0 
+0 0 0 1 0 1 0 2 2 0 1 }}
+{SECT 0 {EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 18 "with(StringTools):" 
+}}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 29 "Msg:=\"allotestparsubstit
+ion\";" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%$MsgGQ6allotestparsubstiti
+on6\"" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 32 "K:=\"zxcvbnmasdfgh
+jklqwertyuiop\";" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%\"KGQ;zxcvbnmasd
+fghjklqwertyuiop6\"" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 24 "KLis
+t:= convert(K,list);" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%&KListG7<Q\"
+z6\"Q\"xF'Q\"cF'Q\"vF'Q\"bF'Q\"nF'Q\"mF'Q\"aF'Q\"sF'Q\"dF'Q\"fF'Q\"gF'
+Q\"hF'Q\"jF'Q\"kF'Q\"lF'Q\"qF'Q\"wF'Q\"eF'Q\"rF'Q\"tF'Q\"yF'Q\"uF'Q\"i
+F'Q\"oF'Q\"pF'" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 194 "KListNum
+:=subs(\"a\"=0,\"b\"=1,\"c\"=2,\"d\"=3,\"e\"=4,\"f\"=5,\"g\"=6,\"h\"=7
+,\"i\"=8,\"j\"=9,\"k\"=10,\"l\"=11,\"m\"=12,\"n\"=13,\"o\"=14,\"p\"=15
+,\"q\"=16,\"r\"=17,\"s\"=18,\"t\"=19,\"u\"=20,\"v\"=21,\"w\"=22,\"x\"=
+23,\"y\"=24,\"z\"=25,KList);" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%)KLi
+stNumG7<\"#D\"#B\"\"#\"#@\"\"\"\"#8\"#7\"\"!\"#=\"\"$\"\"&\"\"'\"\"(\"
+\"*\"#5\"#6\"#;\"#A\"\"%\"#<\"#>\"#C\"#?\"\")\"#9\"#:" }}}{EXCHG 
+{PARA 0 "> " 0 "" {MPLTEXT 1 0 27 "MsgList:=convert(Msg,list);" }}
+{PARA 11 "" 1 "" {XPPMATH 20 "6#>%(MsgListG77Q\"a6\"Q\"lF'F(Q\"oF'Q\"t
+F'Q\"eF'Q\"sF'F*Q\"pF'F&Q\"rF'F,Q\"uF'Q\"bF'F,F*Q\"iF'F*F1F)Q\"nF'" }}
+}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 198 "MsgListNum:=subs(\"a\"=0,
+\"b\"=1,\"c\"=2,\"d\"=3,\"e\"=4,\"f\"=5,\"g\"=6,\"h\"=7,\"i\"=8,\"j\"=
+9,\"k\"=10,\"l\"=11,\"m\"=12,\"n\"=13,\"o\"=14,\"p\"=15,\"q\"=16,\"r\"
+=17,\"s\"=18,\"t\"=19,\"u\"=20,\"v\"=21,\"w\"=22,\"x\"=23,\"y\"=24,\"z
+\"=25,MsgList);" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%+MsgListNumG77\"
+\"!\"#6F'\"#9\"#>\"\"%\"#=F)\"#:F&\"#<F+\"#?\"\"\"F+F)\"\")F)F0F(\"#8
+" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 84 "for i from 1 to nops(Ms
+gListNum) do MsgListNum[i]=KListNum[MsgListNum[i]+1]  end do;" }}
+{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"!\"#D" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#6\"\"'" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#6\"\"
+'" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#9\"#5" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#>\"#<" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"%\"\"
+\"" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#=\"\"%" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#>\"#<" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#:\"#6
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"!\"#D" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#<\"#A" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#=\"\"%
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#?\"#>" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"\"\"\"#B" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#=\"
+\"%" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#>\"#<" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"\")\"#=" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#>\"#<
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\")\"#=" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#9\"#5" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#8\"\"*
+" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 20 "DKListNum:=KListNum;" }
+}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%*DKListNumG7<\"#D\"#B\"\"#\"#@\"\"
+\"\"#8\"#7\"\"!\"#=\"\"$\"\"&\"\"'\"\"(\"\"*\"#5\"#6\"#;\"#A\"\"%\"#<
+\"#>\"#C\"#?\"\")\"#9\"#:" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 
+68 "for i from 1 to nops(KListNum) do DKListNum[KListNum[i]+1]=i end d
+o;" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#:\"\"\"" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"\")\"\"#" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"#\"
+\"$" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#C\"\"%" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#B\"\"&" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"*\"
+\"'" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"(F$" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#D\"\")" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"%\"
+\"*" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#@\"#5" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#8\"#6" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#7F$" }
+}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"!\"#8" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"\"$\"#9" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"&\"#
+:" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"'\"#;" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#;\"#<" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#?\"#=
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"\"\"#>" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#A\"#?" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#<\"#@
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#9\"#A" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#>\"#B" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#=\"#C
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#5\"#D" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#6\"#E" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 84 
+"for i from 1 to nops(MsgListNum) do MsgListNum[i]=DKListNum[MsgListNu
+m[i]+1] end do;" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"!\"#D" }}
+{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#6\"\"'" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#6\"\"'" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#9\"#5
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#>\"#<" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"\"%\"\"\"" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#=\"
+\"%" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#>\"#<" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#:\"#6" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"!\"#D
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#<\"#A" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#=\"\"%" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#?\"#>
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\"\"\"#B" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#=\"\"%" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#>\"#<
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\")\"#=" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#>\"#<" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"\")\"#=
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/\"#9\"#5" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#/\"#8\"\"*" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 
+193 "r :=subs(0=\"a\",1=\"b\",2=\"c\",3=\"d\",4=\"e\",5=\"f\",6=\"g\",
+7=\"h\",8=\"i\",9=\"j\",10=\"k\",11=\"l\",12=\"m\",13=\"n\",14=\"o\",1
+5=\"p\",16=\"q\",17=\"r\",18=\"s\",19=\"t\",20=\"u\",21=\"v\",22=\"w\"
+,23=\"x\",24=\"y\",25=\"z\",MsgListNum);" }}{PARA 11 "" 1 "" {XPPMATH 
+20 "6#>%\"rG77Q\"a6\"Q\"lF'F(Q\"oF'Q\"tF'Q\"eF'Q\"sF'F*Q\"pF'F&Q\"rF'F
+,Q\"uF'Q\"bF'F,F*Q\"iF'F*F1F)Q\"nF'" }}}{EXCHG {PARA 0 "> " 0 "" 
+{MPLTEXT 1 0 11 "Join(r,\"\");" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#Q6al
+lotestparsubstition6\"" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 0 "" 
+}}}}{MARK "11 0 0" 0 }{VIEWOPTS 1 1 0 1 1 1803 1 1 1 1 }{PAGENUMBERS 
+0 1 2 33 1 1 }

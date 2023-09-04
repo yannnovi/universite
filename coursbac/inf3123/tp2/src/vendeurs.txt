@@ -1,0 +1,25 @@
+vendeur:1:bourdeau:yann
+client:allo:bonjour:4790 cazelais:aucun commentaire:1
+client:lamothe:roger:4790 cazelais:aucun commentaire:23
+vendeur:2:goyer:francis
+client:gagnon:etienne:23 quelquepart:professeur d'universite:450
+vendeur:3:lamothe:roger
+client:nom1:prenom1:4790 cazelais:aucun commentaire:1
+client:nom2:prenom1:4790 cazelais:aucun commentaire:1
+client:nom3:prenom1:4790 cazelais:aucun commentaire:1
+client:nom4:prenom1:4790 cazelais:aucun commentaire:1
+client:nom5:prenom1:4790 cazelais:aucun commentaire:1
+client:nom6:prenom1:4790 cazelais:aucun commentaire:1
+client:nom7:prenom1:4790 cazelais:aucun commentaire:1
+client:nom8:prenom1:4790 cazelais:aucun commentaire:1
+client:nom9:prenom1:4790 cazelais:aucun commentaire:1
+client:nom10:prenom1:4790 cazelais:aucun commentaire:1
+client:nom11:prenom1:4790 cazelais:aucun commentaire:1
+client:nom12:prenom1:4790 cazelais:aucun commentaire:1
+client:nom13:prenom1:4790 cazelais:aucun commentaire:1
+client:nom14:prenom1:4790 cazelais:aucun commentaire:1
+client:nom15:prenom1:4790 cazelais:aucun commentaire:1
+client:nom16:prenom1:4790 cazelais:aucun commentaire:1
+client:nom17:prenom1:4790 cazelais:aucun commentaire:1
+client:nom18:prenom1:4790 cazelais:aucun commentaire:1
+client:nom19:prenom1:4790 cazelais:aucun commentaire:1

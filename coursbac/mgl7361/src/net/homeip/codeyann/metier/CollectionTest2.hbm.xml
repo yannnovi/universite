@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="net.homeip.codeyann.metier.CollectionTest2" table="collection_test"> 
+    <id
+      name="index"
+      column="index"
+      type="int">
+      <generator class="assigned"/> 
+    </id>
+       <map name="collection" table="collection_map">
+            <key column="id"/>
+            <index column="map_id" type="string"/>
+            <element column="map_value" type="string"/>
+        </map> 
+  </class>   
+</hibernate-mapping>

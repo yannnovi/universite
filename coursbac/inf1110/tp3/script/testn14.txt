@@ -1,0 +1,160 @@
+a
+cccc
+cccc
+1475 maisonneuve est#4
+
+a
+aaaa
+aaaa
+1475 maisonneuve est#4
+
+a
+bbbb
+bbbb
+1475 maisonneuve est#4
+
+n
+cccc
+cccc
+Grosse Tomate
+1
+1.0
+horreur
+general
+
+n
+eeee
+eeee
+Grosse Tomate
+1
+1.0
+horreur
+general
+
+n
+aaaa
+aaaa
+Grosse Tomate
+10
+1.0
+horreur
+general
+
+n
+dddd
+dddd
+Grosse Tomate
+10
+1.0
+horreur
+general
+
+n
+bbbb
+bbbb
+Grosse Tomate
+10
+1.0
+horreur
+general
+
+l
+eeee1002
+cccc1001
+10 10 2003
+12 10 2003
+
+l
+bbbb1005
+cccc1001
+10 10 2003
+12 10 2003
+
+l
+bbbb1005
+cccc1001
+10 10 2003
+12 10 2003
+
+l
+bbbb1005
+cccc1001
+10 10 2003
+12 10 2003
+
+l
+bbbb1005
+cccc1001
+10 10 2003
+12 10 2003            
+
+l
+bbbb1005
+cccc1001
+10 10 2003
+12 10 2003
+
+l
+dddd1004
+bbbb1003
+10 10 2003
+12 10 2003
+
+l
+cccc1001
+bbbb1003
+10 10 2003
+12 10 2003
+
+l
+aaaa1003
+bbbb1003
+10 10 2003
+12 10 2003
+
+l
+aaaa1003
+bbbb1003
+10 10 2003
+12 10 2003
+
+l
+aaaa1003
+bbbb1003
+10 10 2003
+12 10 2003
+
+l
+aaaa1003
+bbbb1003
+10 10 2003
+12 10 2003
+
+l
+aaaa1003
+bbbb1003
+10 10 2003
+12 10 2003
+
+c
+bbbb1003
+
+o
+bbbb1003
+
+s
+
+t
+horreur
+
+e
+10 12 2003
+
+5
+
+f
+
+i
+
+q
+

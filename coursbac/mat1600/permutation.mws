@@ -1,0 +1,57 @@
+{VERSION 5 0 "IBM INTEL NT" "5.0" }
+{USTYLETAB {CSTYLE "Maple Input" -1 0 "Courier" 0 1 255 0 0 1 0 1 0 0 
+1 0 0 0 0 1 }{CSTYLE "2D Math" -1 2 "Times" 0 1 0 0 0 0 0 0 2 0 0 0 0 
+0 0 1 }{CSTYLE "2D Output" 2 20 "" 0 1 0 0 255 1 0 0 0 0 0 0 0 0 0 1 }
+{PSTYLE "Normal" -1 0 1 {CSTYLE "" -1 -1 "Times" 1 12 0 0 0 1 2 2 2 2 
+2 2 1 1 1 1 }1 1 0 0 0 0 1 0 1 0 2 2 0 1 }{PSTYLE "Maple Output" -1 
+11 1 {CSTYLE "" -1 -1 "Times" 1 12 0 0 0 1 2 2 2 2 2 2 1 1 1 1 }3 3 0 
+0 0 0 1 0 1 0 2 2 0 1 }}
+{SECT 0 {EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 18 "with(StringTools):" 
+}}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 30 "Msg:=\"allotestparpermuta
+tion\";" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%$MsgGQ7allotestparpermuta
+tion6\"" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 15 "K:=[3,2,1,5,4];
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%\"KG7'\"\"$\"\"#\"\"\"\"\"&\"\"%
+" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 27 "MsgList:=convert(Msg,li
+st);" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%(MsgListG78Q\"a6\"Q\"lF'F(Q
+\"oF'Q\"tF'Q\"eF'Q\"sF'F*Q\"pF'F&Q\"rF'F-F+F.Q\"mF'Q\"uF'F*F&F*Q\"iF'F
+)Q\"nF'" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 198 "MsgListNum:=sub
+s(\"a\"=0,\"b\"=1,\"c\"=2,\"d\"=3,\"e\"=4,\"f\"=5,\"g\"=6,\"h\"=7,\"i
+\"=8,\"j\"=9,\"k\"=10,\"l\"=11,\"m\"=12,\"n\"=13,\"o\"=14,\"p\"=15,\"q
+\"=16,\"r\"=17,\"s\"=18,\"t\"=19,\"u\"=20,\"v\"=21,\"w\"=22,\"x\"=23,
+\"y\"=24,\"z\"=25,MsgList);" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%+MsgL
+istNumG78\"\"!\"#6F'\"#9\"#>\"\"%\"#=F)\"#:F&\"#<F,F*F-\"#7\"#?F)F&F)
+\"\")F(\"#8" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 24 "MsgListCode:
+=MsgListNum;" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%,MsgListCodeG78\"\"!
+\"#6F'\"#9\"#>\"\"%\"#=F)\"#:F&\"#<F,F*F-\"#7\"#?F)F&F)\"\")F(\"#8" }}
+}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 146 "for z from 1 to nops(MsgLi
+stNum)/ nops(K) do for i from 1 to nops(K) do MsgListCode[(z-1)*nops(K
+)+i]:=MsgListNum[(z-1)*nops(K)+K[i]]end do end do;" }}}{EXCHG {PARA 0 
+"> " 0 "" {MPLTEXT 1 0 12 "MsgListCode;" }}{PARA 11 "" 1 "" {XPPMATH 
+20 "6#78\"#6F$\"\"!\"#>\"#9F&\"#=\"\"%F%\"#:F)F*\"#<\"#7F+F%F&\"#?\"\"
+)F&F'\"#8" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 208 "MsgListAlphCo
+de :=subs(0=\"a\",1=\"b\",2=\"c\",3=\"d\",4=\"e\",5=\"f\",6=\"g\",7=\"
+h\",8=\"i\",9=\"j\",10=\"k\",11=\"l\",12=\"m\",13=\"n\",14=\"o\",15=\"
+p\",16=\"q\",17=\"r\",18=\"s\",19=\"t\",20=\"u\",21=\"v\",22=\"w\",23=
+\"x\",24=\"y\",25=\"z\",MsgListCode);" }}{PARA 11 "" 1 "" {XPPMATH 20 
+"6#>%0MsgListAlphCodeG78Q\"l6\"F&Q\"aF'Q\"tF'Q\"oF'F)Q\"sF'Q\"eF'F(Q\"
+pF'F,F-Q\"rF'Q\"mF'F.F(F)Q\"uF'Q\"iF'F)F*Q\"nF'" }}}{EXCHG {PARA 0 "> \+
+" 0 "" {MPLTEXT 1 0 36 "MsgCode := Join(MsgListAlphCode,\"\");" }}
+{PARA 11 "" 1 "" {XPPMATH 20 "6#>%(MsgCodeGQ7llatotseapeprmratuiton6\"
+" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 0 "" }{TEXT -1 0 "" }}}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 149 "for z from 1 to nops(MsgLis
+tNum)/ nops(K) do for i from 1 to nops(K) do MsgListCode[(z-1)*nops(K)
++i]:=MsgListNum[(z-1)*nops(K)+K[K[i]]]end do end do;" }}}{EXCHG {PARA 
+0 "> " 0 "" {MPLTEXT 1 0 12 "MsgListCode;" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#78\"\"!\"#6F%\"#9\"#>\"\"%\"#=F'\"#:F$\"#<F*F(F+\"#7\"#
+?F'F$F'\"\")F&\"#8" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 210 "MsgL
+istAlphdecode :=subs(0=\"a\",1=\"b\",2=\"c\",3=\"d\",4=\"e\",5=\"f\",6
+=\"g\",7=\"h\",8=\"i\",9=\"j\",10=\"k\",11=\"l\",12=\"m\",13=\"n\",14=
+\"o\",15=\"p\",16=\"q\",17=\"r\",18=\"s\",19=\"t\",20=\"u\",21=\"v\",2
+2=\"w\",23=\"x\",24=\"y\",25=\"z\",MsgListCode);" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6#>%2MsgListAlphdecodeG78Q\"a6\"Q\"lF'F(Q\"oF'Q\"tF'Q\"eF
+'Q\"sF'F*Q\"pF'F&Q\"rF'F-F+F.Q\"mF'Q\"uF'F*F&F*Q\"iF'F)Q\"nF'" }}}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 38 "MsgDecode:=Join(MsgListAlphd
+ecode,\"\");" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%*MsgDecodeGQ7allotes
+tparpermutation6\"" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 0 "" }}}}
+{MARK "15 0 0" 0 }{VIEWOPTS 1 1 0 1 1 1803 1 1 1 1 }{PAGENUMBERS 0 1 
+2 33 1 1 }

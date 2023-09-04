@@ -1,0 +1,64 @@
+<?XML vresion="1.0"?>
+<VXML version="2.1">
+<meta name="mainmenu" content="yann.bourdeau@mac.com"/>
+<property name="loglevel" value="3"/>
+<property name="metriclevel" value="2@/>
+<property name="bargein" value="false"/>
+
+<form id="ChoixMenuPrincipal">
+<field name="choix">
+    <grammar type="text/gsl">
+      [dtmf-1 dtmf-2 dtmf-3 dtmf-9]
+    <grammar/>
+    
+    <prompt>
+      Vous devez faire un choix parmis les suivants.
+      1 - Obtenir le la liste des spectacles.
+      2 - Reserver un spectacle.
+      3 - Quitter.
+      9 - Rejoindre un préposé.
+    </prompt>
+
+    <noinput>
+      <prompt>
+        Vous n'avex pas fait de choix, s'il vous plait faite en un. <reprompt/>
+      </prompt>
+    </noinput>
+
+    <nomatch>
+      <prompt>
+        Votre choix est invalide, s'il vous plait faite un choix valide. 
+      </prompt>
+      <reprompt/>
+    </nomatch>
+
+    </field>
+    
+    <filled namelist="choix">
+    <if cond="choix  == dtmf-1"/>
+    	<prompt>
+    	Vous avez choisi d'obtenir la liste des spectacles.
+    	</prompt>
+    <elseif cond="choix == dtmf-2"/>
+        <prompt>
+    	Vous avez choisi de faire une réservation.
+    	</prompt>
+    <elseif cond="choix == dtmf-3"/>
+        <prompt>
+    	Au revoir!
+    	</prompt>
+    	<exit/>
+    <elseif cond="choix == dtmf-9"/>
+        <prompt>
+    	Vous allez rejoindre un préposé.
+    	</prompt>
+      <else/>
+      <prompt>
+      Votre choix est invalide.
+      </prompt>
+      </if> 
+      </filled>
+    
+    </form>
+    
+ </vxml>

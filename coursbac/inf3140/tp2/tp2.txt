@@ -1,0 +1,392 @@
+INF3140 - TP2
+Hiver 2004 Groupe 30
+Par
+Yann Bourdeau BOUY06097202
+Sebastien Grand GRAS06088207
+-------------------------------------------------------------------------------
+#1)
+DEFINITION toto
+
+CONCEPT piece:type
+WHERE Subtype(piece,nat)
+-- On assume qu'une piece est represente en cents.
+
+END
+
+MACHINE distribution_monnaie { piecesdefaut :set{piece} SUCH THAT size(piecesdefaut) > 0}
+
+IMPORT Subtype FROM type
+IMPORT piece FROM toto
+
+STATE (listepiece: map{piece,nat},somme:montant)
+
+INVARIANT ALL(x:piece SUCH THAT x IN listepiece::listepiece[x]>=0 & x IN piecesdefaut),
+          somme = SUM(x:piece SUCH THAT x IN listepiece::valeur(x) * nat_to_real(listepiece[x]))
+
+
+INITIALLY listepiece=create(!),
+          ALL(x:piece SUCH THAT x IN piecesdefaut & x IN listepiece :: listepiece[x]=0),
+          somme = 0.0
+
+          
+MESSAGE ajouter_piece(x:piece)
+        WHEN x IN piecesdefaut
+                REPLY ajout_effectue
+                TRANSITION listepiece = bind (x,*listepiece[x]+1,*listepiece),somme=*somme+valeur(x)
+                
+        OTHERWISE
+                REPLY piece_inexistante
+                
+MESSAGE faire_la_monnaie(m:montant)
+        WHEN monnaie_suffisante(m)
+        CHOOSE ( reponse: sequence{piece} SUCH THAT SUM(x:piece SUCH THAT x IN reponse & x IN listepiece
+                                                     :: valeur(x))=m
+                   &
+                   length(reponse) = MINIMUM(s:sequence{piece} SUCH THAT ALL (x:piece SUCH THAT x IN s :: x IN reponse)
+                        & SUM(x:piece SUCH THAT x IN s & x IN listepiece::valeur(x))=m
+                        ::length(s))  
+                   &
+                   ALL(x:piece SUCH THAT x IN reponse & x IN listepiece
+                       :: listepiece[x] >= SUM (y: nat SUCH THAT y IN domain(reponse) & x = reponse[y] :: 1)))                                                                                     
+        REPLY (t:sequence{piece} ) 
+                WHERE t=reponse
+        TRANSITION listepiece=ajuste_quantite(reponse,*listepiece),
+                   somme= *somme + SUM(x:nat SUCH THAT x IN domain(reponse) :: valeur(reponse[x]))
+        OTHERWISE
+                REPLY pieces_insufisantes                   
+                
+
+MESSAGE pieces_suffisantes (m:montant)
+        REPLY (b:boolean) 
+                WHERE b=monnaie_suffisante(m)
+        
+MESSAGE valeurs_manquante
+        REPLY (reponse:set{piece})
+                WHERE reponse={x:piece SUCH THAT x IN listepiece & listepiece[x]=0::x}
+                
+CONCEPT valeur(p:piece) VALUE(b:montant)
+  -- retourne la valeur d'une piece
+  
+CONCEPT montant: type
+     WHERE
+       Subtype(montant,real),
+       ALL(x:montant::x >= 0.0)
+
+
+CONCEPT monnaie_suffisante(m:montant) VALUE (b:boolean)
+WHERE b = SOME(test:sequence{piece} :: SUM(x:piece SUCH THAT x IN test & x IN listepiece:: valeur(x))=m 
+      & 
+     ALL(x:piece SUCH THAT x IN test & x IN listepiece:: listepiece[x] >= SUM (y: nat SUCH THAT y IN domain(test) & x = test[y] :: 1)))
+                                                                      
+CONCEPT ajuste_quantite(t:sequence{piece},l:map{piece,nat}) VALUE (z:map{piece,nat})
+WHERE z=create(!),
+      ALL(x: piece SUCH THAT x IN t :: z[x]=l[x]-SUM(v:nat SUCH THAT v IN domain(t) & t[v]=x :: 1))
+         
+END
+
+#2)
+TYPE graphe {sommet:type}
+         MODEL (sommets : set{sommet},
+               aretes : set{set{sommet}}
+               )
+        
+        
+         INVARIANT ALL( graphus: graphe{sommet}::ALL(x:set{sommet} SUCH THAT x IN graphus.aretes
+                     :: ALL (y:sommet SUCH THAT y IN x :: y IN graphus.sommets))
+                    &
+                  ALL(x:set{sommet} SUCH THAT x IN graphus.aretes & ~(x = {}) :: size(x)=1 | size(x)=2))
+        
+         MESSAGE graphe (s:set{sommet},a: set{set{sommet}})
+         WHEN ALL(x:set{sommet} SUCH THAT x IN a:: ALL (y:sommet SUCH THAT y IN x :: y IN s))
+                &
+             ALL(x:set{sommet} SUCH THAT x IN a & ~(x = {}) :: size(x)=1 | size(x)=2)
+             REPLY (g:graphe{sommet}) 
+                        WHERE g.sommets=s,g.aretes=a
+         OTHERWISE REPLY EXCEPTION graphe_invalide
+
+         MESSAGE composants(g: graphe{sommet})
+           REPLY (s:set{sommet} , a:set{set{sommet}})
+           WHERE s=g.sommets, a=g.aretes
+           
+        MESSAGE uniongraphe (g1 g2: graphe{sommet})
+        REPLY (g:graphe{sommet})
+        WHERE g.sommets= {x: sommet SUCH THAT x IN g1.sommets | x IN g2.sommets :: x},
+              g.aretes= {x:set{sommet} SUCH THAT x IN g2.aretes | x IN g2.aretes :: x}
+              
+        MESSAGE intersectiongraphe (g1 g2:graphe{sommet})
+        REPLY (g:graphe{sommet})
+        WHERE g.sommets={x:sommet SUCH THAT x IN g1.sommets & x IN g2.sommets :: x},
+              g.aretes={x:set{sommet} SUCH THAT x IN g1.aretes & x IN g2.aretes::x}
+
+        MESSAGE ajouter_sommet(s:sommet,ge:graphe{sommet})
+        WHEN ~(s IN ge.sommets) 
+        REPLY (g:graphe{sommet})
+        WHERE g.sommets = add(s,ge.sommets),
+              g.aretes = ge.aretes
+        OTHERWISE REPLY EXCEPTION sommet_existant
+
+        MESSAGE ajouter_arte(a:set{sommet},ge:graphe{sommet})
+        WHEN ~(a IN ge.aretes) & (size(a) =1 | size(a) =2)
+             & ALL(x:sommet SUCH THAT x IN a :: x IN ge.sommets)
+        REPLY (g:graphe{sommet})
+        WHERE g.sommets=ge.sommets,
+              g.aretes=add(a,ge.aretes)
+        OTHERWISE REPLY EXCEPTION arte_invalide               
+
+        MESSAGE degre (s:sommet, g:graphe{sommet})
+        WHEN s IN g.sommets
+        REPLY (x:nat)
+        WHERE x= SUM(a:set{sommet} SUCH THAT s IN a & a IN g.aretes::nombre_sommet(a))
+        OTHERWISE REPLY EXCEPTION sommet_invalide
+        
+        MESSAGE chemin(s1 s2:sommet, g:graphe{sommet})
+        WHEN s1 IN g.sommets & s2 IN g.sommets
+          REPLY (b:boolean)
+          WHERE b = SOME(seq: sequence{sommet} SUCH THAT seq[1]=s1 &
+             seq[length(seq)]=s2 :: ALL(i:nat SUCH THAT 1 <= i < length(seq) ::
+             {seq[i],seq[i+1]} IN g.aretes))
+       OTHERWISE REPLY EXCEPTION sommet_inexistant
+
+       CONCEPT nombre_sommet(a:set{sommet}) VALUE (x:nat)
+         -- retourne 2 si le length de a est 1 sinon 1.
+
+                        
+
+END
+
+#3)
+
+TYPE club_tictactoe
+        INHERIT mutable{club_tictactoe}
+
+MODEL( partiegagne: nat,
+               partieperdue: nat,
+               partienulle: nat,
+               j: joueur,
+               mp: mot_passe,                                        
+               partie_en_cours: boolean,
+               partie: sequence{case},
+               joueurpartie: sequence{joueur},
+               defi: set{joueur},  -- Defi envoye.
+               challenge: set{joueur}, -- defi recus.
+               connecte: boolean
+               )   
+   
+INVARIANT ALL(ct: club_tictactoe ::
+     -- Si il y a une partie en cours, il ne doit pas avoir de challenge et de defi
+     (ct.partie_en_cours => (size(ct.defi)= 0 & size(ct.challenge)=0))
+     &
+     -- Si il n'y a pas une partie en cours, tous les element de la sequence partie doit etre 0.
+     (~(ct.partie_en_cours) => ALL(x:case SUCH THAT x IN ct.partie::x=0) )     
+     & 
+     -- Si il y a une partie en cours, le nombre de case X doit etre egale soit au nombre de case O ou +1
+     (ct.partie_en_cours => ((SUM(x:nat SUCH THAT x IN domain (ct.partie) & ct.partie[x]=1::1 )
+             = SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=2::1) | 
+             (SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=1::1 )
+             = SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=2::1) + 1
+             ))))
+     &
+     -- La longeur de la sequence de partie doit etre de 9.
+     (length(ct.partie)=9)        
+     &
+     (~(ct.j IN ct.defi) )
+     &
+     (~(ct.j IN ct.challenge))
+     &
+     (ct.partie_en_cours => (length(ct.joueurpartie)=2))
+     &
+     (~ct.partie_en_cours =>(length(ct.joueurpartie)=0))
+     &
+     (ct.partie_en_cours => ~(ct.joueurpartie[1] = ct.joueurpartie[2] ))
+     )
+     &
+     ~(SOME( tic1 tic2: club_tictactoe SUCH THAT tic1.j = tic2.j::true))      
+
+
+
+       MESSAGE creer (j1:joueur,tmp:mot_passe)
+       WHEN ~existe_membre(j1)
+       REPLY (ct: club_tictactoe)
+       WHERE ct.partiegagne=0,
+             ct.partieperdue=0,
+             ct.partienulle=0,
+             ct.j=j1,
+             ct.mp=tmp,
+             ct.partie_en_cours=false,
+             ct.partie=[0,0,0,0,0,0,0,0,0],
+             ct.defi={},
+             ct.challenge={},
+             ct.joueurpartie=[],
+             ct.connecte=false
+        TRANSITION new(ct)            
+        OTHERWISE REPLY existe_deja
+        
+        MESSAGE connecter (j:joueur,m: mot_passe)
+        WHEN SOME(ct:club_tictactoe SUCH THAT ct.j=j:: ct.mp=m & ~ct.connecte)
+        CHOOSE (ct:club_tictactoe SUCH THAT ct.j=j)
+        REPLY connecter
+        TRANSITION ct.connecte=true
+        OTHERWISE REPLY impossible_de_connecter
+
+        MESSAGE liste
+        REPLY (l:set{joueur})
+        WHERE l= {ct:club_tictactoe SUCH THAT ct.connecte :: ct.j}
+
+
+        MESSAGE defi (j1 j2:joueur)
+        WHEN j1 IN liste & j2 IN liste
+             & ALL(ct:club_tictactoe SUCH THAT ct.j=j1 | ct.j=j2::~ct.partie_en_cours & ct.connecte)
+        CHOOSE(ct1 ct2:club_tictactoe SUCH THAT ct1.j=j1 & ct2.j=j2)             
+        REPLY ok_mon_minou
+        TRANSITION ct1.defi=add(j2,*ct1.defi),
+                   ct2.challenge=add(j1,*ct2.challenge)
+        OTHERWISE REPLY joueur_non_disponible
+
+        MESSAGE accepte(j1 j2: joueur)
+        WHEN ALL(ct:club_tictactoe SUCH THAT ct.j=j2 :: j1 IN ct.defi)
+             &
+             ALL(ct:club_tictactoe SUCH THAT ct.j=j1 :: j2 IN ct.challenge)
+        CHOOSE(ct1 ct2 :club_tictactoe SUCH THAT ct1.j=j1 & ct2.j=j2)             
+        REPLY partie_commencer
+        TRANSITION ct1.defi={},
+                   ct2.defi={},
+                   ct1.challenge={},
+                   ct2.challenge={},
+                   ct1.partie_en_cours=true,
+                   ct2.partie_en_cours=true,
+                   ct1.joueurpartie = add(j2,add(j1,[])),
+                   ct2.joueurpartie = add(j2,add(j1,[])),
+                   ALL(ct:club_tictactoe :: ct.defi = *ct.defi-{j1,j2}
+                           & ct.challenge=*ct.challenge-{j1,j2})
+        OTHERWISE REPLY joueur_non_disponible
+
+        MESSAGE choisir_position(j:joueur,pos:nat SUCH THAT 1<= pos <= 9 )
+        -- x peut jouer et sa position est gagnante
+        WHEN ALL(ct:club_tictactoe SUCH THAT ct.j=j::
+                ct.partie_en_cours
+                &
+                position_vide(ct.partie,pos)
+                &
+                defiant(ct)
+                &
+                peut_jouer_x(ct)
+                &
+                partie_gagnante_x(ct,pos)
+                )
+        CHOOSE(ct1 ct2:club_tictactoe SUCH THAT ct1.j=j &  ct2.j=ct1.joueurpartie[2])
+        REPLY x_a_gagne
+        TRANSITION ct1.partie_en_cours=false,
+                   ct2.partie_en_cours=false,
+                   ct1.partiegagne= *ct1.partiegagne+1,
+                   ct2.partieperdue=*ct2.partieperdue+1,
+                   ALL (x:nat SUCH THAT x IN domain(ct1.partie)::ct1.partie[x]=0 & ct2.partie[x]=0)
+
+        -- o peut jouer et sa position est gagnante
+        WHEN ALL(ct:club_tictactoe SUCH THAT ct.j=j::
+                ct.partie_en_cours
+                &
+                position_vide(ct.partie,pos)
+                &
+                ~defiant(ct)
+                &
+                peut_jouer_o(ct)
+                &
+                partie_gagnante_o(ct,pos)
+                )
+        CHOOSE(ct1 ct2:club_tictactoe SUCH THAT ct1.j=j &  ct2.j=ct1.joueurpartie[1])                                                                  
+        REPLY o_a_gagne                
+        TRANSITION ct1.partie_en_cours=false,
+                   ct2.partie_en_cours=false,
+                   ct1.partiegagne= *ct1.partiegagne+1,
+                   ct2.partieperdue=*ct2.partieperdue+1,
+                   ALL (x:nat SUCH THAT x IN domain(ct1.partie)::ct1.partie[x]=0 & ct2.partie[x]=0)
+                   
+        -- Le nouvelle position rends la partie nulle
+        WHEN ALL(ct:club_tictactoe SUCH THAT ct.j=j::
+        ct.partie_en_cours
+                &
+                position_vide(ct.partie,pos)
+                &
+                defiant(ct)
+                &
+                peut_jouer_x(ct)
+                &
+                partie_nulle(ct,pos)
+                )
+        CHOOSE(ct1 ct2:club_tictactoe SUCH THAT ct1.j=j &  ct2.j=ct1.joueurpartie[2])                
+        REPLY la_partie_est_nulle
+        TRANSITION ct1.partie_en_cours=false,
+                   ct2.partie_en_cours=false,
+                   ct1.partienulle= *ct1.partienulle+1,
+                   ct2.partienulle=*ct2.partienulle+1,
+                   ALL (x:nat SUCH THAT x IN domain(ct1.partie)::ct1.partie[x]=0 & ct2.partie[x]=0)
+
+        -- Le joueur peut mettre sa position
+        WHEN ALL(ct:club_tictactoe SUCH THAT ct.j=j::
+                ct.partie_en_cours
+                &
+                position_vide(ct.partie,pos)
+                &
+                ~partie_nulle(ct,pos)
+                &
+                ~partie_gagnante_o(ct,pos)
+                &
+                ~partie_gagnante_x(ct,pos)
+                )
+        CHOOSE(ct1 ct2:club_tictactoe SUCH THAT ct1.j=j &  ((ct1.joueurpartie[1]=j => ct2.j=ct1.joueurpartie[2])                                
+                                                            |
+                                                            (ct1.joueurpartie[2]=j => ct2.j=ct2.joueurpartie[1])))    
+        REPLY position_prise
+        TRANSITION ct1.partie[pos]= type_case(ct1),
+                   ct2.partie[pos]= type_case(ct1)
+        OTHERWISE REPLY impossible_de_jouer
+        
+
+        CONCEPT joueur: type
+
+        CONCEPT mot_passe: type
+        WHERE Subtype(mot_passe,string)
+
+        CONCEPT case : type
+        WHERE Subtype(case,nat),
+        ALL(x:case :: x=1 | x=2 | x= 0)
+
+        CONCEPT existe_membre(j:joueur) VALUE (b:boolean)
+        WHERE b=SOME(ct:club_tictactoe::ct.j=j)
+        
+        CONCEPT position_vide (s:sequence{case},pos:nat) VALUE(b:boolean)
+        WHERE b=(s[pos]=0)
+        
+        CONCEPT defiant (ct: club_tictactoe) VALUE(b:boolean)
+        WHERE b=(ct.joueurpartie[1] = ct.j)
+        
+        CONCEPT peut_jouer_x(ct: club_tictactoe) VALUE (b:boolean)
+        WHERE b = ( SUM (x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x] =1 :: 1)
+                    = SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=2 :: 1))
+
+        CONCEPT partie_gagnante_x(ct: club_tictactoe,pos :nat SUCH THAT 1<=pos<=9) VALUE (b:boolean)                    
+        WHERE b= ligne_gagnante(ct,pos)
+                 &
+                 (SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=1 ::1) = SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=2 :: 1)+1)
+                 
+        CONCEPT ligne_gagnante(ct: club_tictactoe,pos:nat SUCH THAT 1<=pos<=9) VALUE (b:boolean)
+        -- determine que la partie est gagnante, soit qu'il y a une ligne complete avec la nouvelle position.
+
+        CONCEPT peut_jouer_o(ct: club_tictactoe) VALUE (b:boolean)
+        WHERE b = ( SUM (x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x] =1 :: 1)
+                    = SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=2 :: 1)+1)
+                    
+        CONCEPT partie_gagnante_o(ct: club_tictactoe,pos :nat SUCH THAT 1<=pos<=9) VALUE (b:boolean)                    
+        WHERE b= ligne_gagnante(ct,pos)
+                 &
+                 (SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=1 ::1) = SUM(x:nat SUCH THAT x IN domain(ct.partie) & ct.partie[x]=2 :: 1) )
+
+        CONCEPT partie_nulle(ct:club_tictactoe,pos:nat) VALUE(b:boolean)
+        -- Fonction qui permet d evaluer si une partie sera nulle apres que
+        -- le coup a la position pos est joue.
+        -- partie_nulle(ct,pos) => (SUM(x:nat SUCH THAT x IN domain(ct.partie) &        -- ct.partie[x]=0::1) <3)
+
+        CONCEPT type_case(ct:club_tictactoe) VALUE(x:case)
+        -- retourne 1 ou 2 dependant si le joueur est celui qui a defie.
+END
+

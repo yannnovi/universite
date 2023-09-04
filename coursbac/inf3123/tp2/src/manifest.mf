@@ -1,0 +1,4 @@
+Main-Class: tp2.Application
+Class-Path: classes
+
+
